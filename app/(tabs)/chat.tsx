@@ -103,7 +103,7 @@ export default function ChatScreen() {
     setIsLoading(true);
   
     try {
-      const response = await fetch("http://192.168.148.181:5000/chat", {
+      const response = await fetch("http://LOCAL_IP_ADDRESS:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: newMessage.text }),
