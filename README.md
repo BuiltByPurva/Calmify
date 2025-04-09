@@ -3,10 +3,10 @@
 ## App Screenshots
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-  <img src="assets/screenshots/ui.jpg" alt="Calmify UI" width="200"/>
-  <img src="assets/screenshots/analytics.jpg" alt="Analytics View" width="200"/>
-  <img src="assets/screenshots/chatbot.jpg" alt="Chat Interface" width="200"/>
-  <img src="assets/screenshots/sessions.png" alt="Meditation Sessions" width="200"/>
+  <img src="calmify/assets/screenshots/ui.jpg" alt="Calmify UI" width="200"/>
+  <img src="calmify/assets/screenshots/analytics.jpg" alt="Analytics View" width="200"/>
+  <img src="calmify/assets/screenshots/chatbot.jpg" alt="Chat Interface" width="200"/>
+  <img src="calmify/assets/screenshots/sessions.png" alt="Meditation Sessions" width="200"/>
 </div>
 
 Calmify is a comprehensive mental health and sleep tracking application that helps users monitor their stress levels, sleep patterns, and provides guided meditation sessions.
