@@ -1,0 +1,10 @@
+sentence_transformers
+chromadb
+langchain_groq 
+langchain_core 
+langchain_community
+pypdf
+flask 
+flask-cors 
+langchain 
+transformers 
