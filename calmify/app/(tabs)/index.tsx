@@ -3,34 +3,53 @@ import { StyleSheet, TextInput, ScrollView, Alert, Button, Dimensions, Touchable
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View } from '@/components/Themed';
-import { LineChart, BarChart } from 'react-native-chart-kit';
+import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import SessionScreen from './session';
 import ChatScreen from './chat';
 
 interface HealthData {
-  heartRate: string;
+  snoringRange: string;
+  respirationRate: string;
+  bodyTemperature: string;
+  bloodOxygen: string;
   sleepHours: string;
-  snoringRate: string;
+  heartRate: string;
   timestamp: string;
-  stressLevel?: string;
+  stressLevel?: number;
+  stressLabel?: string;
   prediction?: number;
   confidence?: number;
 }
 
 const screenWidth = Dimensions.get('window').width;
 
+const STRESS_LABELS = {
+  0: "No Stress",
+  1: "Mild Stress",
+  2: "Moderate Stress",
+  3: "High Stress",
+  4: "Extreme Stress"
+};
+
+const getStressLabel = (level: number): string => {
+  return STRESS_LABELS[level as keyof typeof STRESS_LABELS] || "Unknown";
+};
+
 export default function TabOneScreen() {
+  const [activeTab, setActiveTab] = useState<'input' | 'charts'>('input');
   const [healthData, setHealthData] = useState<HealthData>({
-    heartRate: '',
+    snoringRange: '',
+    respirationRate: '',
+    bodyTemperature: '',
+    bloodOxygen: '',
     sleepHours: '',
-    snoringRate: '',
+    heartRate: '',
     timestamp: '',
   });
 
   const [savedData, setSavedData] = useState<HealthData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     loadSavedData();
@@ -47,104 +66,73 @@ export default function TabOneScreen() {
     }
   };
 
-  const predictStress = async (data: HealthData) => {
-    try {
-      const response = await fetch('http://192.168.204.181:5000/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          heart_rate: parseFloat(data.heartRate),
-          sleep_hours: parseFloat(data.sleepHours),
-          snoring_rate: parseFloat(data.snoringRate),
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || result.details || 'Failed to get prediction');
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Error predicting stress:', error);
-      throw error;
-    }
-  };
-
+  
   const saveData = async () => {
-    if (!healthData.heartRate || !healthData.sleepHours || !healthData.snoringRate) {
+    if (!healthData.snoringRange || !healthData.respirationRate || 
+        !healthData.bodyTemperature || !healthData.bloodOxygen || 
+        !healthData.sleepHours || !healthData.heartRate) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Try multiple IP addresses to ensure connectivity
-      const endpoints = [
-        'http://192.168.204.181:5000/predict',
-        'http://10.0.2.2:5000/predict',  // Android emulator localhost
-        'http://localhost:5000/predict',  // iOS simulator localhost
-      ];
+      console.log('Sending data to backend:', {
+        snoringRange: parseFloat(healthData.snoringRange),
+        respirationRate: parseFloat(healthData.respirationRate),
+        bodyTemperature: parseFloat(healthData.bodyTemperature),
+        bloodOxygen: parseFloat(healthData.bloodOxygen),
+        sleepHours: parseFloat(healthData.sleepHours),
+        heartRate: parseFloat(healthData.heartRate),
+      });
 
-      let response = null;
-      let error = null;
+      const response = await fetch('http://192.168.204.181:5000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          snoringRange: parseFloat(healthData.snoringRange),
+          respirationRate: parseFloat(healthData.respirationRate),
+          bodyTemperature: parseFloat(healthData.bodyTemperature),
+          bloodOxygen: parseFloat(healthData.bloodOxygen),
+          sleepHours: parseFloat(healthData.sleepHours),
+          heartRate: parseFloat(healthData.heartRate),
+        }),
+      });
 
-      // Try each endpoint until one works
-      for (const endpoint of endpoints) {
-        try {
-          response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              heart_rate: parseFloat(healthData.heartRate),
-              sleep_hours: parseFloat(healthData.sleepHours),
-              snoring_rate: parseFloat(healthData.snoringRate),
-            }),
-          });
-          if (response.ok) break;
-        } catch (e) {
-          error = e;
-          console.log(`Failed to connect to ${endpoint}:`, e);
-          continue;
-        }
-      }
-
-      if (!response) {
-        throw new Error('Could not connect to any server endpoint. Please check if the backend server is running.');
-      }
-
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (response.ok) {
         const newData = {
           ...healthData,
           timestamp: new Date().toISOString(),
           stressLevel: data.stress_level,
-          confidence: data.confidence,
+          stressLabel: data.stress_label,
+          prediction: data.prediction
         };
         
         const updatedData = [...savedData, newData];
         await AsyncStorage.setItem('healthData', JSON.stringify(updatedData));
         setSavedData(updatedData);
-        setHealthData({ heartRate: '', sleepHours: '', snoringRate: '', timestamp: '' });
+        setHealthData({
+          snoringRange: '',
+          respirationRate: '',
+          bodyTemperature: '',
+          bloodOxygen: '',
+          sleepHours: '',
+          heartRate: '',
+          timestamp: '',
+        });
         Alert.alert('Success', 'Data saved successfully!');
       } else {
         Alert.alert('Error', data.error || 'Failed to save data');
       }
     } catch (error) {
       console.error('Error saving data:', error);
-      Alert.alert(
-        'Connection Error',
-        'Failed to connect to the server. Please ensure:\n\n' +
-        '1. The backend server is running\n' +
-        '2. You are connected to the correct network\n' +
-        '3. The server IP address is correct'
-      );
+      Alert.alert('Error', 'Failed to connect to the server');
     } finally {
       setIsLoading(false);
     }
@@ -185,46 +173,122 @@ export default function TabOneScreen() {
       );
     }
 
+    // Get the latest sleep hours data
+    const latestSleepHours = parseFloat(savedData[savedData.length - 1].sleepHours);
+    const sleepQuality = latestSleepHours >= 6 && latestSleepHours <= 7 ? 'Optimal' : 
+                        latestSleepHours < 6 ? 'Insufficient' : 'Excessive';
+    
+    // Calculate sleep distribution for pie chart
+    const sleepData = [
+      {
+        name: 'Optimal (6-7 hrs)',
+        population: latestSleepHours >= 6 && latestSleepHours <= 7 ? 1 : 0,
+        color: '#4CAF50',
+        legendFontColor: '#7F7F7F',
+        legendFontSize: 12
+      },
+      {
+        name: 'Insufficient (<6 hrs)',
+        population: latestSleepHours < 6 ? 1 : 0,
+        color: '#FFC107',
+        legendFontColor: '#7F7F7F',
+        legendFontSize: 12
+      },
+      {
+        name: 'Excessive (>7 hrs)',
+        population: latestSleepHours > 7 ? 1 : 0,
+        color: '#FF5722',
+        legendFontColor: '#7F7F7F',
+        legendFontSize: 12
+      }
+    ];
+
     return (
       <ScrollView style={styles.chartsContainer}>
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Snoring Rate Trend</Text>
-          <BarChart
-            data={getChartData('snoringRate')}
-            width={screenWidth - 40}
-            height={220}
-            chartConfig={chartConfig}
-            style={styles.chart}
-            yAxisLabel=""
-            yAxisSuffix=" %"
-          />
-        </View>
-
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Sleep Hours Trend</Text>
-          <BarChart
-            data={getChartData('sleepHours')}
-            width={screenWidth - 40}
-            height={220}
-            chartConfig={chartConfig}
-            style={styles.chart}
-            yAxisLabel=""
-            yAxisSuffix=" hrs"
-          />
+          <Text style={styles.chartTitle}>Sleep Quality Analysis</Text>
+          <View style={styles.pieChartContainer}>
+            <View style={styles.pieChartContent}>
+              <View style={styles.pieChartSection}>
+                <PieChart
+                  data={sleepData}
+                  width={120}
+                  height={120}
+                  chartConfig={{
+                    ...chartConfig,
+                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                  }}
+                  accessor="population"
+                  backgroundColor="transparent"
+                  paddingLeft="0"
+                  absolute
+                  hasLegend={false}
+                  center={[0, 0]}
+                />
+              </View>
+              <View style={styles.legendSection}>
+                {sleepData.map((item, index) => (
+                  <View key={index} style={styles.legendItem}>
+                    <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                    <Text style={styles.legendText}>{item.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+          <Text style={styles.chartSubtitle}>Current Sleep Quality: {sleepQuality}</Text>
         </View>
 
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Heart Rate Trend</Text>
-          <LineChart
-            data={getChartData('heartRate')}
-            width={screenWidth - 40}
-            height={220}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chart}
-            withDots={true}
-            withShadow={true}
-          />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <BarChart
+              data={getChartData('heartRate')}
+              width={Math.max(screenWidth - 40, savedData.length * 100)}
+              height={220}
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(255, 82, 82, ${opacity})`,
+              }}
+              style={styles.chart}
+              yAxisLabel=""
+              yAxisSuffix=" bpm"
+              fromZero
+            />
+          </ScrollView>
+          <Text style={styles.chartSubtitle}>Normal Range: 60-100 bpm</Text>
+        </View>
+
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>Stress Level Trend</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <LineChart
+              data={{
+                labels: savedData.slice(-7).map(d => new Date(d.timestamp).toLocaleDateString()),
+                datasets: [{
+                  data: savedData.slice(-7).map(d => d.prediction || 0)
+                }]
+              }}
+              width={Math.max(screenWidth - 40, savedData.length * 100)}
+              height={220}
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(255, 59, 48, ${opacity})`,
+              }}
+              style={styles.chart}
+              bezier
+              withDots
+              withShadow
+              withInnerLines
+              withOuterLines
+              withVerticalLines
+              withHorizontalLines
+              withVerticalLabels
+              withHorizontalLabels
+              fromZero
+            />
+          </ScrollView>
+          <Text style={styles.chartSubtitle}>Stress Level (0-4)</Text>
         </View>
 
         <View style={styles.stressSummary}>
@@ -234,11 +298,8 @@ export default function TabOneScreen() {
               <Text style={styles.stressDate}>
                 {new Date(data.timestamp).toLocaleDateString()}
               </Text>
-              <Text style={data.stressLevel === "Stressed" ? styles.stressedText : styles.notStressedText}>
-                {data.stressLevel}
-              </Text>
-              <Text style={styles.confidenceText}>
-                Confidence: {(data.confidence! * 100).toFixed(1)}%
+              <Text style={styles.stressLevel}>
+                {data.stressLabel || `Level: ${data.prediction?.toFixed(1) || 'N/A'}`}
               </Text>
             </View>
           ))}
@@ -279,31 +340,70 @@ export default function TabOneScreen() {
       <View style={styles.calmifyContainer}>
         <View style={styles.tabBar}>
           <TouchableOpacity
-            style={[styles.tab, styles.activeTab]}
-            onPress={() => {}}
+            style={[styles.tab, activeTab === 'input' && styles.activeTab]}
+            onPress={() => setActiveTab('input')}
           >
-            <Ionicons name="fitness-outline" size={24} color="#007AFF" />
-            <Text style={[styles.tabText, styles.activeNavText]}>Input Data</Text>
+            <Ionicons 
+              name="fitness-outline" 
+              size={24} 
+              color={activeTab === 'input' ? "#007AFF" : "#666"} 
+            />
+            <Text style={[styles.tabText, activeTab === 'input' && styles.activeNavText]}>
+              Input Data
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab]}
-            onPress={() => {}}
+            style={[styles.tab, activeTab === 'charts' && styles.activeTab]}
+            onPress={() => setActiveTab('charts')}
           >
-            <Ionicons name="analytics-outline" size={24} color="#666" />
-            <Text style={styles.tabText}>Analytics</Text>
+            <Ionicons 
+              name="analytics-outline" 
+              size={24} 
+              color={activeTab === 'charts' ? "#007AFF" : "#666"} 
+            />
+            <Text style={[styles.tabText, activeTab === 'charts' && styles.activeNavText]}>
+              Analytics
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {!showAnalytics ? (
+        {activeTab === 'input' ? (
           <ScrollView style={styles.inputContainer}>
             <View style={styles.inputCard}>
-              <Text style={styles.label}>Heart Rate (bpm)</Text>
+              <Text style={styles.label}>Snoring Range (%)</Text>
               <TextInput
                 style={styles.input}
-                value={healthData.heartRate}
-                onChangeText={(text) => setHealthData({ ...healthData, heartRate: text })}
+                value={healthData.snoringRange}
+                onChangeText={(text) => setHealthData({ ...healthData, snoringRange: text })}
                 keyboardType="numeric"
-                placeholder="Enter heart rate"
+                placeholder="Enter snoring range percentage"
+              />
+
+              <Text style={styles.label}>Respiration Rate (breaths/min)</Text>
+              <TextInput
+                style={styles.input}
+                value={healthData.respirationRate}
+                onChangeText={(text) => setHealthData({ ...healthData, respirationRate: text })}
+                keyboardType="numeric"
+                placeholder="Enter respiration rate"
+              />
+
+              <Text style={styles.label}>Body Temperature (°C)</Text>
+              <TextInput
+                style={styles.input}
+                value={healthData.bodyTemperature}
+                onChangeText={(text) => setHealthData({ ...healthData, bodyTemperature: text })}
+                keyboardType="numeric"
+                placeholder="Enter body temperature"
+              />
+
+              <Text style={styles.label}>Blood Oxygen Level (%)</Text>
+              <TextInput
+                style={styles.input}
+                value={healthData.bloodOxygen}
+                onChangeText={(text) => setHealthData({ ...healthData, bloodOxygen: text })}
+                keyboardType="numeric"
+                placeholder="Enter blood oxygen level"
               />
 
               <Text style={styles.label}>Sleep Hours</Text>
@@ -315,13 +415,13 @@ export default function TabOneScreen() {
                 placeholder="Enter sleep hours"
               />
 
-              <Text style={styles.label}>Snoring Rate (%)</Text>
+              <Text style={styles.label}>Heart Rate (bpm)</Text>
               <TextInput
                 style={styles.input}
-                value={healthData.snoringRate}
-                onChangeText={(text) => setHealthData({ ...healthData, snoringRate: text })}
+                value={healthData.heartRate}
+                onChangeText={(text) => setHealthData({ ...healthData, heartRate: text })}
                 keyboardType="numeric"
-                placeholder="Enter snoring rate percentage"
+                placeholder="Enter heart rate"
               />
 
               <TouchableOpacity
@@ -343,12 +443,15 @@ export default function TabOneScreen() {
                     {new Date(data.timestamp).toLocaleDateString()}
                   </Text>
                   <View style={styles.entryDetails}>
-                    <Text style={styles.entryText}>Heart Rate: {data.heartRate} bpm</Text>
+                    <Text style={styles.entryText}>Snoring: {data.snoringRange}%</Text>
+                    <Text style={styles.entryText}>Respiration: {data.respirationRate} bpm</Text>
+                    <Text style={styles.entryText}>Temperature: {data.bodyTemperature}°C</Text>
+                    <Text style={styles.entryText}>Blood O2: {data.bloodOxygen}%</Text>
                     <Text style={styles.entryText}>Sleep: {data.sleepHours} hours</Text>
-                    <Text style={styles.entryText}>Snoring Rate: {data.snoringRate}%</Text>
-                    {data.stressLevel && (
-                      <Text style={data.stressLevel === "Stressed" ? styles.stressedText : styles.notStressedText}>
-                        Stress Level: {data.stressLevel}
+                    <Text style={styles.entryText}>Heart Rate: {data.heartRate} bpm</Text>
+                    {data.stressLevel !== undefined && (
+                      <Text style={data.stressLevel >= 2 ? styles.stressedText : styles.notStressedText}>
+                        Stress Level: {getStressLabel(data.stressLevel)}
                       </Text>
                     )}
                   </View>
@@ -358,77 +461,7 @@ export default function TabOneScreen() {
           </ScrollView>
         ) : (
           <ScrollView style={styles.chartsContainer}>
-            {savedData.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No data available yet. Start by adding your health metrics!</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.chartCard}>
-                  <Text style={styles.chartTitle}>Snoring Rate Trend</Text>
-                  <LineChart
-                    data={{
-                      labels: savedData.slice(-7).map(data => 
-                        new Date(data.timestamp).toLocaleDateString('en-US', { weekday: 'short' })
-                      ),
-                      datasets: [{
-                        data: savedData.slice(-7).map(data => parseFloat(data.snoringRate))
-                      }]
-                    }}
-                    width={Dimensions.get('window').width - 40}
-                    height={220}
-                    chartConfig={chartConfig}
-                    bezier
-                    style={styles.chart}
-                    fromZero
-                    segments={5}
-                  />
-                </View>
-
-                <View style={styles.chartCard}>
-                  <Text style={styles.chartTitle}>Sleep Hours Trend</Text>
-                  <BarChart
-                    data={{
-                      labels: savedData.slice(-7).map(data => 
-                        new Date(data.timestamp).toLocaleDateString('en-US', { weekday: 'short' })
-                      ),
-                      datasets: [{
-                        data: savedData.slice(-7).map(data => parseFloat(data.sleepHours))
-                      }]
-                    }}
-                    width={Dimensions.get('window').width - 40}
-                    height={220}
-                    chartConfig={chartConfig}
-                    style={styles.chart}
-                    showValuesOnTopOfBars
-                    fromZero
-                    yAxisLabel=""
-                    yAxisSuffix="hrs"
-                  />
-                </View>
-
-                <View style={styles.chartCard}>
-                  <Text style={styles.chartTitle}>Heart Rate Trend</Text>
-                  <LineChart
-                    data={{
-                      labels: savedData.slice(-7).map(data => 
-                        new Date(data.timestamp).toLocaleDateString('en-US', { weekday: 'short' })
-                      ),
-                      datasets: [{
-                        data: savedData.slice(-7).map(data => parseFloat(data.heartRate))
-                      }]
-                    }}
-                    width={Dimensions.get('window').width - 40}
-                    height={220}
-                    chartConfig={chartConfig}
-                    bezier
-                    style={styles.chart}
-                    fromZero
-                    segments={8}
-                  />
-                </View>
-              </>
-            )}
+            {renderCharts()}
           </ScrollView>
         )}
       </View>
@@ -610,10 +643,16 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
+  chartSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 5,
+  },
   stressSummary: {
     backgroundColor: '#fff',
     borderRadius: 15,
-    padding: 15,
+    padding: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -622,26 +661,37 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   stressTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 20,
     color: '#333',
+    textAlign: 'center',
   },
   stressItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    marginBottom: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
   },
   stressDate: {
     fontSize: 14,
     color: '#666',
+    fontWeight: '500',
   },
-  confidenceText: {
-    fontSize: 14,
-    color: '#666',
+  stressLevel: {
+    fontSize: 16,
+    color: '#ff3b30',
+    fontWeight: 'bold',
+    backgroundColor: '#fff1f0',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   stressedText: {
     color: '#ff6b6b',
@@ -661,6 +711,59 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  pieChartContainer: {
+    backgroundColor: '#000',
+    borderRadius: 16,
+    padding: 15,
+    marginVertical: 10,
+    width: '100%',
+    height: 160,
+  },
+  pieChartContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  pieChartSection: {
+    width: '40%',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  legendSection: {
+    width: '60%',
+    justifyContent: 'center',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  legendText: {
+    color: '#ffffff',
+    fontSize: 12,
+  },
+  sleepQualityText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
+    color: '#333',
+  },
+  sleepRecommendation: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 5,
+    color: '#666',
+    fontStyle: 'italic',
   },
 });
 

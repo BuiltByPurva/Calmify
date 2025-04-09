@@ -1,0 +1,118 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  CameraView,
+  useCameraPermissions,
+} from 'expo-camera';
+
+export default function CameraScreen() {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraType, setCameraType] = useState<'front' | 'back'>('front');
+  const cameraRef = useRef(null);
+
+  useEffect(() => {
+    if (!permission?.granted) {
+      requestPermission();
+    }
+  }, [permission]);
+
+  const toggleCameraType = () => {
+    setCameraType((prevType: 'front' | 'back') =>
+      prevType === 'back' ? 'front' : 'back'
+    );
+  };
+
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    return <Text>No access to camera</Text>;
+  }
+
+  return (
+    <View style={styles.container}>
+      <CameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing={cameraType}
+      />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+          <Text style={styles.text}>Flip Camera</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  camera: {
+    flex: 1,
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+  },
+  button: {
+    backgroundColor: '#ffffffaa',
+    padding: 10,
+    borderRadius: 8,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+
+model 
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
+from sklearn.ensemble import AdaBoostClassifier
+import joblib
+import pickle
+
+# Step 1: Define features and label
+x = df.drop(columns=['Stress Levels'])  # or define manually
+y = df['Stress Levels']
+
+# Step 2: Split data
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
+
+# Step 3: Select K best features on training data
+kbest = SelectKBest(score_func=mutual_info_classif, k=6)
+x_train_kbest = kbest.fit_transform(x_train, y_train)
+x_test_kbest = kbest.transform(x_test)
+
+# Step 4: Save selected feature names (for prediction use later)
+selected_features = x.columns[kbest.get_support()]
+print("Selected Features:", selected_features.tolist())
+
+# Step 5: Apply scaling
+scaler = StandardScaler()
+x_train_scaled = scaler.fit_transform(x_train_kbest)
+x_test_scaled = scaler.transform(x_test_kbest)
+
+# Step 6: Train AdaBoost model
+model = AdaBoostClassifier()
+model.fit(x_train_scaled, y_train)
+
+# Step 7: Evaluation
+print('Train Accuracy:', model.score(x_train_scaled, y_train))
+print('Test Accuracy:', model.score(x_test_scaled, y_test))
+
+# Step 8: Save model and scaler
+joblib.dump(model, 'adaboost_model_6features.pkl')
+with open('scaler_6features.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+# Save selected feature list
+with open('selected_features.pkl', 'wb') as f:
+    pickle.dump(selected_features.tolist(), f)

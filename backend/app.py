@@ -11,6 +11,11 @@ from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
+import cv2
+import base64
+import io
+from PIL import Image
+from emotion_detector import EmotionDetector
 
 load_dotenv()
 
@@ -18,21 +23,34 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ============= Stress Prediction Model Setup =============
-MODEL_PATH = 'Human_Stress_Predictions.h5'
+MODEL_PATH = 'adaboost_model.pkl'
 SCALER_PATH = 'scaler.pkl'
+
+# Stress level labels
+STRESS_LABELS = {
+    0: "No Stress",
+    1: "Mild Stress",
+    2: "Moderate Stress",
+    3: "High Stress",
+    4: "Extreme Stress"
+}
 
 model = None
 scaler = None
 
 if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH):
     try:
-        model = load_model(MODEL_PATH)
+        model = joblib.load(MODEL_PATH)
         scaler = joblib.load(SCALER_PATH)
         print("Stress prediction model and scaler loaded successfully")
     except Exception as e:
         print(f"Error loading stress prediction model: {e}")
 else:
     print(f"Stress prediction model files not found. Please ensure {MODEL_PATH} and {SCALER_PATH} exist in the backend directory")
+
+# ============= Emotion Detection Setup =============
+emotion_detector = EmotionDetector()
+print("Emotion detection model loaded successfully!")
 
 # ============= Chatbot Model Setup =============
 # Download and cache the model
@@ -93,40 +111,88 @@ def predict():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
-        # Extract features from request
-        try:
-            heart_rate = float(data.get('heartRate', 0))
-            sleep_hours = float(data.get('sleepHours', 0))
-            snoring_rate = float(data.get('snoringRate', 0))
-        except ValueError:
-            return jsonify({'error': 'Invalid input values. All values must be numbers.'}), 400
+        print("Received data from frontend:", data)  # Log the entire request data
         
-        # Create input array with default values for missing features
+        # Extract features from request with proper field names matching frontend
+        try:
+            snoring_range = float(data.get('snoringRange', 0))
+            print(f"Snoring range: {snoring_range}")
+            respiration_rate = float(data.get('respirationRate', 0))
+            print(f"Respiration rate: {respiration_rate}")
+            body_temperature = float(data.get('bodyTemperature', 0))
+            print(f"Body temperature: {body_temperature}")
+            blood_oxygen = float(data.get('bloodOxygen', 0))
+            print(f"Blood oxygen: {blood_oxygen}")
+            sleep_hours = float(data.get('sleepHours', 0))
+            print(f"Sleep hours: {sleep_hours}")
+            heart_rate = float(data.get('heartRate', 0))
+            print(f"Heart rate: {heart_rate}")
+        except ValueError as e:
+            return jsonify({
+                'error': 'Invalid input values. All values must be numbers.',
+                'details': str(e)
+            }), 400
+        
+        # Create input array with the 6 features
         input_data = np.array([[
-            snoring_rate,  # Snoring from input
-            16.0, 98.0, 3.0, 97.0, 15.0,             # average eye movement activity
-            sleep_hours,   # Sleep hours from input
-            heart_rate,  # Heart rate from input
+            snoring_range,
+            respiration_rate,
+            body_temperature,
+            blood_oxygen,
+            sleep_hours,
+            heart_rate
         ]])
         
         # Scale the input data
         input_data_scaled = scaler.transform(input_data)
         
         # Make prediction
-        prediction = model.predict(input_data_scaled)[0][0]
+        prediction = model.predict(input_data_scaled)[0]
         
-        # Determine stress level
-        stress_level = "Stressed" if prediction > 0.3 else "Not Stressed"
+        # Map prediction to stress level (0-4)
+        stress_level = int(prediction)
+        stress_label = STRESS_LABELS.get(stress_level, "Unknown")
         
         return jsonify({
             'prediction': float(prediction),
             'stress_level': stress_level,
-            'confidence': float(abs(prediction - 0.5) * 2)  # Convert to confidence score
+            'stress_label': stress_label
+        })
+        
+    except Exception as e:
+        print(f"Error in predict endpoint: {str(e)}")  # Add logging
+        return jsonify({
+            'error': 'Error processing request',
+            'details': str(e)
+        }), 400
+
+@app.route('/detect_emotion', methods=['POST'])
+def detect_emotion_endpoint():
+    try:
+        # Check if image is in the request
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
+        
+        # Get the image file
+        image_file = request.files['image']
+        
+        # Read the image
+        image_data = image_file.read()
+        
+        # Detect emotion using our model
+        emotion, confidence = emotion_detector.detect_emotion(image_data)
+        
+        if emotion is None:
+            return jsonify({'error': 'No face detected in the image'}), 400
+        
+        return jsonify({
+            'emotion': emotion,
+            'confidence': confidence * 100  # Convert to percentage
         })
         
     except Exception as e:
         return jsonify({
-            'error': 'Error processing request',
+            'error': 'Error processing image',
             'details': str(e)
         }), 400
 
