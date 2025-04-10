@@ -98,6 +98,17 @@ export default function TabLayout() {
           headerTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#007AFF',
         }}
       />
+      <Tabs.Screen
+        name="appointments"
+        options={{
+          title: 'Appointments',
+          tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          },
+          headerTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#007AFF',
+        }}
+      />
     </Tabs>
   );
 }

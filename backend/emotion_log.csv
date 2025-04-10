@@ -12,3 +12,65 @@ Timestamp,Emotion,Confidence,Stress Level,Notes
 2025-04-09 21:50:28,Neutral,0.392627477645874,2,Moderate stress - Normal range
 2025-04-09 21:50:34,Fear,0.39572736620903015,4,High stress - Recommended to practice stress management
 2025-04-09 21:50:44,Fear,0.775156557559967,4,High stress - Recommended to practice stress management
+2025-04-10 06:12:32,Happy,0.9943838119506836,1,Low stress - Good emotional state
+2025-04-10 09:16:13,Happy,0.9943331480026245,1,Low stress - Good emotional state
+2025-04-10 09:16:26,Happy,0.9014890193939209,1,Low stress - Good emotional state
+2025-04-10 09:16:34,Neutral,0.855512261390686,2,Moderate stress - Normal range
+2025-04-10 09:16:44,Happy,0.999022364616394,1,Low stress - Good emotional state
+2025-04-10 09:16:52,Angry,0.7442951798439026,5,Very high stress - Consider seeking support
+2025-04-10 09:16:57,Happy,0.4192240238189697,1,Low stress - Good emotional state
+2025-04-10 09:17:20,Happy,0.8635753989219666,1,Low stress - Good emotional state
+2025-04-10 09:17:32,Happy,0.5159144997596741,1,Low stress - Good emotional state
+2025-04-10 09:26:33,Happy,0.9244505167007446,1,Low stress - Good emotional state
+2025-04-10 09:46:41,Happy,0.9982044696807861,1,Low stress - Good emotional state
+2025-04-10 10:38:49,Sad,0.4613845646381378,3,Elevated stress - Consider taking a break
+2025-04-10 10:39:12,Sad,0.6571527719497681,3,Elevated stress - Consider taking a break
+2025-04-10 10:39:24,Happy,0.9907577037811279,1,Low stress - Good emotional state
+2025-04-10 10:39:40,Neutral,0.5991113185882568,2,Moderate stress - Normal range
+2025-04-10 10:39:56,Neutral,0.9645382165908813,2,Moderate stress - Normal range
+2025-04-10 10:40:24,Happy,0.4457426369190216,1,Low stress - Good emotional state
+2025-04-10 10:40:34,Happy,0.8760583400726318,1,Low stress - Good emotional state
+2025-04-10 10:41:00,Happy,0.9014014005661011,1,Low stress - Good emotional state
+2025-04-10 10:46:12,Happy,0.8315461874008179,1,Low stress - Good emotional state
+2025-04-10 10:46:21,Neutral,0.3134159445762634,2,Moderate stress - Normal range
+2025-04-10 10:46:34,Neutral,0.7821083068847656,2,Moderate stress - Normal range
+2025-04-10 10:46:47,Neutral,0.8573789596557617,2,Moderate stress - Normal range
+2025-04-10 10:52:42,Neutral,0.9393628835678101,2,Moderate stress - Normal range
+2025-04-10 10:59:26,Neutral,0.843396782875061,2,Moderate stress - Normal range
+2025-04-10 10:59:40,Sad,0.9064539670944214,3,Elevated stress - Consider taking a break
+2025-04-10 11:00:19,Happy,0.9437364339828491,1,Low stress - Good emotional state
+2025-04-10 11:01:13,Happy,0.9817149639129639,1,Low stress - Good emotional state
+2025-04-10 11:01:20,Sad,0.533449649810791,3,Elevated stress - Consider taking a break
+2025-04-10 11:01:50,Neutral,0.9682695269584656,2,Moderate stress - Normal range
+2025-04-10 11:02:16,Happy,0.5573964715003967,1,Low stress - Good emotional state
+2025-04-10 11:03:29,Happy,0.9094256162643433,1,Low stress - Good emotional state
+2025-04-10 11:19:31,Neutral,0.5190885663032532,2,Moderate stress - Normal range
+2025-04-10 11:19:38,Happy,0.9694195985794067,1,Low stress - Good emotional state
+2025-04-10 23:34:18,Happy,0.9161693453788757,1,Low stress - Good emotional state
+2025-04-10 23:42:09,Happy,0.5231361985206604,1,Low stress - Good emotional state
+2025-04-10 23:42:26,Surprise,0.403415322303772,2,Moderate stress - Normal range
+2025-04-11 00:03:00,Happy,0.6286960244178772,1,Low stress - Good emotional state
+2025-04-11 00:09:35,Angry,0.8435930013656616,5,Very high stress - Consider seeking support
+2025-04-11 00:09:50,Neutral,0.6161437034606934,2,Moderate stress - Normal range
+2025-04-11 00:10:02,Neutral,0.7618424892425537,2,Moderate stress - Normal range
+2025-04-11 00:10:10,Happy,0.7455793023109436,1,Low stress - Good emotional state
+2025-04-11 00:10:15,Angry,0.46525371074676514,5,Very high stress - Consider seeking support
+2025-04-11 00:10:20,Happy,0.7989088296890259,1,Low stress - Good emotional state
+2025-04-11 00:10:25,Happy,0.3429771661758423,1,Low stress - Good emotional state
+2025-04-11 00:10:30,Fear,0.3612249493598938,4,High stress - Recommended to practice stress management
+2025-04-11 00:13:24,Neutral,0.5597957968711853,2,Moderate stress - Normal range
+2025-04-11 00:15:13,Sad,0.7602488398551941,3,Elevated stress - Consider taking a break
+2025-04-11 00:15:55,Sad,0.7150864005088806,3,Elevated stress - Consider taking a break
+2025-04-11 00:16:01,Sad,0.7937562465667725,3,Elevated stress - Consider taking a break
+2025-04-11 00:17:31,Happy,0.35093173384666443,1,Low stress - Good emotional state
+2025-04-11 00:25:32,Happy,0.6222172975540161,1,Low stress - Good emotional state
+2025-04-11 00:33:31,Angry,0.403727650642395,5,Very high stress - Consider seeking support
+2025-04-11 00:34:30,Happy,0.5322686433792114,1,Low stress - Good emotional state
+2025-04-11 00:36:20,Happy,0.5668321251869202,1,Low stress - Good emotional state
+2025-04-11 00:36:40,Neutral,0.3327668309211731,2,Moderate stress - Normal range
+2025-04-11 00:39:22,Sad,0.6270172595977783,3,Elevated stress - Consider taking a break
+2025-04-11 00:41:47,Neutral,0.9250925779342651,2,Moderate stress - Normal range
+2025-04-11 00:46:42,Angry,0.43480047583580017,5,Very high stress - Consider seeking support
+2025-04-11 00:49:35,Neutral,0.7136669754981995,2,Moderate stress - Normal range
+2025-04-11 01:17:35,Sad,0.46147117018699646,3,Elevated stress - Consider taking a break
+2025-04-11 01:18:06,Sad,0.4858095049858093,3,Elevated stress - Consider taking a break

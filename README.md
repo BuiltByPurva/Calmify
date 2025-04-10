@@ -1,4 +1,4 @@
-# Calmify - Mental Health & Sleep Tracking App
+# Calmify - Mental Health App
 
 ## App Screenshots
 
