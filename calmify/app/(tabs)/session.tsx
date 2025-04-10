@@ -257,7 +257,11 @@ export default function SessionsScreen() {
       setIsPlaying(false);
       setActiveSession(null);
       setShowTimer(false);
-      await stopSound();
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        setSound(null);
+      }
       setTimeLeft(0);
     } catch (error) {
       console.error('Error stopping session:', error);
@@ -314,6 +318,13 @@ export default function SessionsScreen() {
     setShowTimePicker(false);
     const timeString = formatTimeString(selectedHour, selectedMinute, selectedPeriod);
     // Update any other necessary state or perform actions with the formatted time
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    setNewSession({ title: '', duration: '' });
+    setSelectedDays([]);
+    setSelectedTime(new Date());
   };
 
   const renderTimePicker = () => {
@@ -546,17 +557,14 @@ export default function SessionsScreen() {
         visible={showCreateModal}
         transparent
         animationType="fade"
+        onRequestClose={handleCloseCreateModal}
       >
         <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
           <View style={[styles.createModalContent, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => {
-                setShowCreateModal(false);
-                setNewSession({ title: '', duration: '' });
-                setSelectedDays([]);
-                setSelectedTime(new Date());
-              }}
+              onPress={handleCloseCreateModal}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <X size={24} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} />
             </TouchableOpacity>
