@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useColorScheme as useSystemColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ThemeColors {
   primary: string;
@@ -31,9 +33,9 @@ const darkTheme: ThemeColors = {
   text: {
     primary: '#ffffff',
     secondary: '#8e8e93',
-    inverse: '#000000',
+    inverse: '#ffffff',
   },
-  border: '#38383a',
+  border: '#2c2c2e',
 };
 
 interface ThemeContextType {
@@ -49,10 +51,35 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
+  const systemColorScheme = useSystemColorScheme();
+  const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
+  useEffect(() => {
+    loadSavedTheme();
+  }, []);
+
+  const loadSavedTheme = async () => {
+    try {
+      const savedTheme = await AsyncStorage.getItem('theme');
+      if (savedTheme) {
+        setIsDark(savedTheme === 'dark');
+      } else {
+        setIsDark(systemColorScheme === 'dark');
+      }
+    } catch (error) {
+      console.error('Error loading theme:', error);
+      setIsDark(systemColorScheme === 'dark');
+    }
+  };
+
+  const toggleTheme = async () => {
+    try {
+      const newIsDark = !isDark;
+      await AsyncStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+      setIsDark(newIsDark);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
   };
 
   const theme = isDark ? darkTheme : lightTheme;
@@ -66,7 +93,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
