@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -8,14 +7,16 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/utils/ThemeContext';
+import { Text } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { Play, Calendar, Clock, TrendingUp, Pause, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Audio } from 'expo-av';
 import { useState, useEffect } from 'react';
 
 export default function SessionsScreen() {
-  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeSession, setActiveSession] = useState<number | null>(null);
@@ -138,13 +139,13 @@ export default function SessionsScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>
+        <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>
           Sessions
         </Text>
-        <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
+        <Text style={[styles.subtitle, { color: Colors[colorScheme ?? 'light'].tabIconDefault }]}>
           Your mindfulness journey
         </Text>
       </View>
@@ -156,15 +157,20 @@ export default function SessionsScreen() {
         {sessions.map((session) => (
           <View
             key={session.id}
-            style={[styles.sessionCard, { backgroundColor: theme.card }]}
+            style={[styles.sessionCard, { 
+              backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#ffffff'
+            }]}
           >
             <LinearGradient
-              colors={[theme.primary + '15', 'transparent']}
+              colors={[
+                colorScheme === 'dark' ? 'rgba(10, 132, 255, 0.3)' : 'rgba(0, 122, 255, 0.15)',
+                'transparent'
+              ]}
               style={styles.cardGradient}
             />
             <View style={styles.sessionHeader}>
               <Text
-                style={[styles.sessionTitle, { color: theme.text.primary }]}
+                style={[styles.sessionTitle, { color: Colors[colorScheme ?? 'light'].text }]}
               >
                 {session.title}
               </Text>
@@ -172,7 +178,9 @@ export default function SessionsScreen() {
                 style={[
                   styles.playButton,
                   { 
-                    backgroundColor: activeSession === session.id ? theme.text.secondary : theme.primary 
+                    backgroundColor: activeSession === session.id ? 
+                      'rgba(255, 255, 255, 0.36)' : 
+                      '#4A90E2'
                   }
                 ]}
                 onPress={() => {
@@ -184,34 +192,34 @@ export default function SessionsScreen() {
                 }}
               >
                 {activeSession === session.id ? (
-                  <Pause size={20} color={theme.text.inverse} />
+                  <Pause size={20} color="#FFFFFF" />
                 ) : (
-                  <Play size={20} color={theme.text.inverse} />
+                  <Play size={20} color="#FFFFFF" />
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.sessionDetails}>
               <View style={styles.detailItem}>
-                <Clock size={16} color={theme.text.secondary} />
+                <Clock size={16} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} />
                 <Text
-                  style={[styles.detailText, { color: theme.text.secondary }]}
+                  style={[styles.detailText, { color: colorScheme === 'dark' ? '#E0E0E0' : '#666666' }]}
                 >
                   {session.duration}
                 </Text>
               </View>
               <View style={styles.detailItem}>
-                <Calendar size={16} color={theme.text.secondary} />
+                <Calendar size={16} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} />
                 <Text
-                  style={[styles.detailText, { color: theme.text.secondary }]}
+                  style={[styles.detailText, { color: colorScheme === 'dark' ? '#E0E0E0' : '#666666' }]}
                 >
                   {session.schedule}
                 </Text>
               </View>
               <View style={styles.detailItem}>
-                <TrendingUp size={16} color={theme.text.secondary} />
+                <TrendingUp size={16} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} />
                 <Text
-                  style={[styles.detailText, { color: theme.text.secondary }]}
+                  style={[styles.detailText, { color: colorScheme === 'dark' ? '#E0E0E0' : '#666666' }]}
                 >
                   {session.progress}
                 </Text>
@@ -226,19 +234,19 @@ export default function SessionsScreen() {
         transparent
         animationType="fade"
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.timerCard, { backgroundColor: theme.card }]}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.modalContent, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={stopSession}
             >
-              <X size={24} color={theme.text.secondary} />
+              <X size={24} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} />
             </TouchableOpacity>
-            <Text style={[styles.timerText, { color: theme.text.primary }]}>
+            <Text style={[styles.timerText, { color: colorScheme === 'dark' ? '#E0E0E0' : '#666666' }]}>
               {formatTime(timeLeft)}
             </Text>
-            <Text style={[styles.timerSubtext, { color: theme.text.secondary }]}>
-              {sessions.find(s => s.id === activeSession)?.title}
+            <Text style={[styles.timerLabel, { color: colorScheme === 'dark' ? '#A0A0A0' : '#8E8E93' }]}>
+              Time Remaining
             </Text>
           </View>
         </View>
@@ -329,7 +337,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timerCard: {
+  modalContent: {
     width: '80%',
     padding: 24,
     borderRadius: 16,
@@ -357,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
     marginVertical: 16,
   },
-  timerSubtext: {
+  timerLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
   },

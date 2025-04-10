@@ -1,13 +1,14 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Ionicons } from '@expo/vector-icons';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { Text, View } from '@/components/Themed';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
@@ -21,25 +22,42 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
+        tabBarActiveTintColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
+        tabBarInactiveTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#666666',
+        tabBarStyle: {
+          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          borderTopColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        },
+        headerStyle: {
+          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+        },
+        headerTintColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
         headerShown: useClientOnlyValue(false, true),
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Calmify',
-          tabBarIcon: ({ color }: { color: string }) => <TabBarIcon name="home" color={color} />,
+          title: '',
+          headerTitle: () => (
+            <Text style={[
+              styles.headerTitle,
+              { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }
+            ]}>Calmify</Text>
+          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
                 {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  <Ionicons
+                    name="settings-outline"
+                    size={28}
+                    color={colorScheme === 'dark' ? '#E0E0E0' : '#007AFF'}
+                    style={{ 
+                      marginRight: 15, 
+                      opacity: pressed ? 0.5 : 1,
+                      transform: [{ rotate: pressed ? '30deg' : '0deg' }],
+                    }}
                   />
                 )}
               </Pressable>
@@ -51,23 +69,45 @@ export default function TabLayout() {
         name="camera"
         options={{
           title: 'Emotion',
-          tabBarIcon: ({ color }: { color: string }) => <TabBarIcon name="camera" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="camera" color={color} />,
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          },
+          headerTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#007AFF',
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
-          tabBarIcon: ({ color }: { color: string }) => <TabBarIcon name="comments" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          },
+          headerTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#007AFF',
         }}
       />
       <Tabs.Screen
         name="session"
         options={{
           title: 'Session',
-          tabBarIcon: ({ color }: { color: string }) => <TabBarIcon name="clock-o" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          },
+          headerTintColor: colorScheme === 'dark' ? '#E0E0E0' : '#007AFF',
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+});

@@ -5,7 +5,6 @@ import {
   Platform,
   KeyboardAvoidingView,
   ActivityIndicator,
-  Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -16,7 +15,9 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useTheme } from '@/utils/ThemeContext';
+import { Text } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { Stack } from 'expo-router';
 import { SendHorizontal, Bot } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -40,7 +41,7 @@ const welcomeMessages = [
 ];
 
 export default function ChatScreen() {
-  const { theme } = useTheme();
+  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -134,20 +135,20 @@ export default function ChatScreen() {
     keyboardHeight > 0 ? keyboardHeight - insets.bottom : BOTTOM_TAB_HEIGHT;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
       <Stack.Screen
         options={{
           headerShown: true,
           headerTitle: 'Mental Health Assistant',
           headerStyle: {
-            backgroundColor: theme.card,
-          } as any,
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
+          },
           headerTitleStyle: {
-            color: theme.text.primary,
+            color: Colors[colorScheme ?? 'light'].text,
             fontFamily: 'Inter-Bold',
           },
           headerLeft: () => (
-            <Bot size={24} color={theme.primary} style={{ marginLeft: 16 }} />
+            <Bot size={24} color={colorScheme === 'dark' ? '#E0E0E0' : '#666666'} style={{ marginLeft: 16 }} />
           ),
         }}
       />
@@ -176,8 +177,15 @@ export default function ChatScreen() {
                 style={[
                   styles.messageBubble,
                   message.isBot
-                    ? [styles.botBubble, { backgroundColor: theme.card }]
-                    : [styles.userBubble, { backgroundColor: theme.primary }],
+                    ? [styles.botBubble, { 
+                        backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
+                        borderColor: colorScheme === 'dark' ? '#3C3C3E' : '#E5E5EA',
+                        borderWidth: 1,
+                      }]
+                    : [styles.userBubble, { 
+                        backgroundColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
+                        borderColor: 'transparent',
+                      }],
                 ]}
               >
                 <Text
@@ -185,8 +193,8 @@ export default function ChatScreen() {
                     styles.messageText,
                     {
                       color: message.isBot
-                        ? theme.text.primary
-                        : theme.text.inverse,
+                        ? colorScheme === 'dark' ? '#FFFFFF' : '#000000'
+                        : '#FFFFFF',
                     },
                   ]}
                 >
@@ -197,8 +205,8 @@ export default function ChatScreen() {
                     styles.timeText,
                     {
                       color: message.isBot
-                        ? theme.text.secondary
-                        : theme.text.inverse,
+                        ? colorScheme === 'dark' ? '#8E8E93' : '#8E8E93'
+                        : 'rgba(255, 255, 255, 0.8)',
                     },
                   ]}
                 >
@@ -211,51 +219,43 @@ export default function ChatScreen() {
                 entering={FadeInDown}
                 style={[
                   styles.loadingContainer,
-                  { backgroundColor: theme.card },
+                  { backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#f0f0f0' },
                 ]}
               >
-                <ActivityIndicator color={theme.primary} />
+                <ActivityIndicator color={Colors[colorScheme ?? 'light'].tint} />
               </Animated.View>
             )}
           </ScrollView>
-          <View
-            style={[
-              styles.inputContainer,
-              { 
-                backgroundColor: theme.card, 
-                borderTopColor: theme.border,
-                paddingBottom: Platform.OS === 'ios' ? 24 : 4,
-                paddingTop: 8,
-                paddingHorizontal: 16,
-                marginBottom: Platform.OS === 'android' ? BOTTOM_TAB_HEIGHT : 0
-              },
-            ]}
-          >
+          <View style={[
+            styles.inputContainer, 
+            { 
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+              borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+            }
+          ]}>
             <TextInput
               style={[
                 styles.input,
-                {
-                  backgroundColor: theme.background,
-                  color: theme.text.primary,
+                { 
+                  backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#f0f0f0',
+                  color: Colors[colorScheme ?? 'light'].text,
+                  borderColor: 'transparent',
                 },
               ]}
+              placeholder="Type a message..."
+              placeholderTextColor={colorScheme === 'dark' ? '#999999' : '#666666'}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Type a message..."
-              placeholderTextColor={theme.text.secondary}
               multiline
-              maxLength={500}
             />
             <TouchableOpacity
-              style={[styles.sendButton, { backgroundColor: theme.primary }]}
+              style={[
+                styles.sendButton,
+                { backgroundColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' },
+              ]}
               onPress={sendMessage}
-              disabled={!inputText.trim() || isLoading}
             >
-              <SendHorizontal
-                size={24}
-                color={theme.text.inverse}
-                style={{ transform: [{ rotate: '0deg' }] }}
-              />
+              <SendHorizontal size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#FFFFFF'} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>

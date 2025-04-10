@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, ScrollView, Alert, Button, Dimensions, TouchableOpacity } from 'react-native';
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View } from '@/components/Themed';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import SessionScreen from './session';
 import ChatScreen from './chat';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { useThemeColor } from '@/components/Themed';
+import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface HealthData {
   snoringRange: string;
@@ -19,7 +24,6 @@ interface HealthData {
   stressLevel?: number;
   stressLabel?: string;
   prediction?: number;
-  confidence?: number;
 }
 
 const screenWidth = Dimensions.get('window').width;
@@ -36,7 +40,25 @@ const getStressLabel = (level: number): string => {
   return STRESS_LABELS[level as keyof typeof STRESS_LABELS] || "Unknown";
 };
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const inputBorder = useThemeColor({}, 'inputBorder');
+  const chartBackground = useThemeColor({}, 'chartBackground');
+  const legendText = useThemeColor({}, 'legendText');
+  const pieChartBackground = useThemeColor({}, 'pieChartBackground');
+  const stressLevelBorder = useThemeColor({}, 'stressLevelBorder');
+  const stressLevelBackground = useThemeColor({}, 'stressLevelBackground');
+  const deleteButton = useThemeColor({}, 'deleteButton');
+  const tabBarBorder = useThemeColor({}, 'tabBarBorder');
+  const entryCardBackground = useThemeColor({}, 'entryCardBackground');
+  const entryDateText = useThemeColor({}, 'entryDateText');
+  const entryText = useThemeColor({}, 'entryText');
+  const emptyStateText = useThemeColor({}, 'emptyStateText');
+  const placeholderTextColor = colorScheme === 'dark' ? '#666666' : '#999999';
+
   const [activeTab, setActiveTab] = useState<'input' | 'charts'>('input');
   const [healthData, setHealthData] = useState<HealthData>({
     snoringRange: '',
@@ -50,6 +72,7 @@ export default function TabOneScreen() {
 
   const [savedData, setSavedData] = useState<HealthData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     loadSavedData();
@@ -149,18 +172,19 @@ export default function TabOneScreen() {
   };
 
   const chartConfig = {
-    backgroundColor: '#ffffff',
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
+    backgroundColor: chartBackground,
+    backgroundGradientFrom: chartBackground,
+    backgroundGradientTo: chartBackground,
     decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
+    color: (opacity = 1) => colorScheme === 'dark' ? `rgba(255, 255, 255, ${opacity})` : `rgba(0, 122, 255, ${opacity})`,
     style: {
       borderRadius: 16
     },
     propsForLabels: {
       rotation: 45,
       fontSize: 12,
-      textAnchor: 'start' as const
+      textAnchor: 'start' as const,
+      fill: textColor
     }
   };
 
@@ -335,6 +359,326 @@ export default function TabOneScreen() {
     );
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: backgroundColor,
+    },
+    calmifyContainer: {
+      flex: 1,
+    },
+    inputContainer: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: backgroundColor,
+    },
+    chartsContainer: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: backgroundColor,
+    },
+    deleteButton: {
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: deleteButton,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    tabBar: {
+      flexDirection: 'row',
+      backgroundColor: cardBackground,
+      paddingBottom: 20,
+      paddingTop: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: tabBarBorder,
+      justifyContent: 'space-around',
+    },
+    tab: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 8,
+    },
+    activeTab: {
+      borderBottomWidth: 2,
+      borderBottomColor: stressLevelBorder,
+    },
+    tabText: {
+      fontSize: 12,
+      color: entryDateText,
+      marginTop: 4,
+    },
+    activeNavText: {
+      color: stressLevelBorder,
+      fontWeight: '600',
+    },
+    inputCard: {
+      backgroundColor: cardBackground,
+      borderRadius: 15,
+      padding: 20,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    label: {
+      fontSize: 16,
+      marginBottom: 8,
+      color: textColor,
+      fontWeight: '500',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: inputBorder,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      fontSize: 16,
+      backgroundColor: cardBackground,
+      color: textColor,
+    },
+    button: {
+      backgroundColor: stressLevelBorder,
+      padding: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    buttonDisabled: {
+      backgroundColor: '#ccc',
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    recentEntries: {
+      marginTop: 20,
+      backgroundColor: cardBackground,
+      borderRadius: 20,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 5,
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    cardGradient: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      height: '100%',
+    },
+    recentTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      color: textColor,
+      textAlign: 'center',
+    },
+    entryCard: {
+      marginBottom: 15,
+      padding: 15,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+    },
+    entryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    entryDate: {
+      fontSize: 14,
+      color: colorScheme === 'dark' ? '#fff' : '#000',
+      opacity: 0.7,
+      fontWeight: '500',
+    },
+    stressIndicator: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+      backgroundColor: 'transparent',
+    },
+    entryContent: {
+      gap: 12,
+    },
+    entryRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    entryItem: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    entryText: {
+      fontSize: 15,
+      color: colorScheme === 'dark' ? '#fff' : '#000',
+      opacity: 0.9,
+      flex: 1,
+    },
+    stressedText: {
+      color: colorScheme === 'dark' ? '#ff6b6b' : '#ff3b30',
+      fontWeight: 'bold',
+    },
+    notStressedText: {
+      color: colorScheme === 'dark' ? '#4cd964' : '#34c759',
+      fontWeight: 'bold',
+    },
+    chartCard: {
+      backgroundColor: cardBackground,
+      borderRadius: 15,
+      padding: 15,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    chartTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: textColor,
+    },
+    chart: {
+      marginVertical: 8,
+      borderRadius: 16,
+    },
+    chartSubtitle: {
+      fontSize: 12,
+      color: entryDateText,
+      textAlign: 'center',
+      marginTop: 5,
+    },
+    stressSummary: {
+      backgroundColor: cardBackground,
+      borderRadius: 15,
+      padding: 20,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    stressTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      color: textColor,
+      textAlign: 'center',
+    },
+    stressItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 15,
+      marginBottom: 8,
+      backgroundColor: stressLevelBackground,
+      borderRadius: 10,
+      borderLeftWidth: 4,
+      borderLeftColor: stressLevelBorder,
+    },
+    stressDate: {
+      fontSize: 14,
+      color: entryDateText,
+      fontWeight: '500',
+    },
+    stressLevel: {
+      fontSize: 16,
+      color: textColor,
+      fontWeight: 'bold',
+      backgroundColor: pieChartBackground,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    emptyStateText: {
+      fontSize: 16,
+      color: emptyStateText,
+      textAlign: 'center',
+    },
+    pieChartContainer: {
+      backgroundColor: pieChartBackground,
+      borderRadius: 16,
+      padding: 15,
+      marginVertical: 10,
+      width: '100%',
+      height: 160,
+    },
+    pieChartContent: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+    },
+    pieChartSection: {
+      width: '40%',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    legendSection: {
+      width: '60%',
+      justifyContent: 'center',
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    legendColor: {
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      marginRight: 8,
+    },
+    legendText: {
+      color: legendText,
+      fontSize: 12,
+    },
+    sleepQualityText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginTop: 10,
+      color: textColor,
+    },
+    sleepRecommendation: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginTop: 5,
+      color: entryDateText,
+      fontStyle: 'italic',
+    },
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.calmifyContainer}>
@@ -377,6 +721,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, snoringRange: text })}
                 keyboardType="numeric"
                 placeholder="Enter snoring range percentage"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <Text style={styles.label}>Respiration Rate (breaths/min)</Text>
@@ -386,6 +731,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, respirationRate: text })}
                 keyboardType="numeric"
                 placeholder="Enter respiration rate"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <Text style={styles.label}>Body Temperature (°C)</Text>
@@ -395,6 +741,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, bodyTemperature: text })}
                 keyboardType="numeric"
                 placeholder="Enter body temperature"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <Text style={styles.label}>Blood Oxygen Level (%)</Text>
@@ -404,6 +751,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, bloodOxygen: text })}
                 keyboardType="numeric"
                 placeholder="Enter blood oxygen level"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <Text style={styles.label}>Sleep Hours</Text>
@@ -413,6 +761,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, sleepHours: text })}
                 keyboardType="numeric"
                 placeholder="Enter sleep hours"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <Text style={styles.label}>Heart Rate (bpm)</Text>
@@ -422,6 +771,7 @@ export default function TabOneScreen() {
                 onChangeText={(text) => setHealthData({ ...healthData, heartRate: text })}
                 keyboardType="numeric"
                 placeholder="Enter heart rate"
+                placeholderTextColor={placeholderTextColor}
               />
 
               <TouchableOpacity
@@ -436,24 +786,90 @@ export default function TabOneScreen() {
             </View>
 
             <View style={styles.recentEntries}>
+              <LinearGradient
+                colors={[colorScheme === 'dark' ? 'rgba(10, 132, 255, 0.1)' : 'rgba(0, 122, 255, 0.1)', 'transparent']}
+                style={styles.cardGradient}
+              />
               <Text style={styles.recentTitle}>Recent Entries</Text>
               {savedData.slice(-5).reverse().map((data, index) => (
-                <View key={index} style={styles.entryCard}>
-                  <Text style={styles.entryDate}>
-                    {new Date(data.timestamp).toLocaleDateString()}
-                  </Text>
-                  <View style={styles.entryDetails}>
-                    <Text style={styles.entryText}>Snoring: {data.snoringRange}%</Text>
-                    <Text style={styles.entryText}>Respiration: {data.respirationRate} bpm</Text>
-                    <Text style={styles.entryText}>Temperature: {data.bodyTemperature}°C</Text>
-                    <Text style={styles.entryText}>Blood O2: {data.bloodOxygen}%</Text>
-                    <Text style={styles.entryText}>Sleep: {data.sleepHours} hours</Text>
-                    <Text style={styles.entryText}>Heart Rate: {data.heartRate} bpm</Text>
+                <View key={index} style={[
+                  styles.entryCard,
+                  { borderBottomWidth: index !== savedData.length - 1 ? 1 : 0,
+                    borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                ]}>
+                  <View style={styles.entryHeader}>
+                    <Text style={styles.entryDate}>
+                      {new Date(data.timestamp).toLocaleDateString()}
+                    </Text>
                     {data.stressLevel !== undefined && (
-                      <Text style={data.stressLevel >= 2 ? styles.stressedText : styles.notStressedText}>
-                        Stress Level: {getStressLabel(data.stressLevel)}
+                      <Text style={[
+                        styles.stressIndicator,
+                        { backgroundColor: data.stressLevel >= 2 ? 
+                          (colorScheme === 'dark' ? '#ff6b6b33' : '#ff3b3033') : 
+                          (colorScheme === 'dark' ? '#4cd96433' : '#34c75933') 
+                        }
+                      ]}>
+                        <Text style={data.stressLevel >= 2 ? styles.stressedText : styles.notStressedText}>
+                          {getStressLabel(data.stressLevel)}
+                        </Text>
                       </Text>
                     )}
+                  </View>
+                  <View style={styles.entryContent}>
+                    <View style={styles.entryRow}>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="bed-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>Sleep: {data.sleepHours}h</Text>
+                      </View>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="heart-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>HR: {data.heartRate} bpm</Text>
+                      </View>
+                    </View>
+                    <View style={styles.entryRow}>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="thermometer-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>Temp: {data.bodyTemperature}°C</Text>
+                      </View>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="water-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>O2: {data.bloodOxygen}%</Text>
+                      </View>
+                    </View>
+                    <View style={styles.entryRow}>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="pulse-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>Resp: {data.respirationRate}</Text>
+                      </View>
+                      <View style={styles.entryItem}>
+                        <Ionicons 
+                          name="volume-high-outline" 
+                          size={20} 
+                          color={colorScheme === 'dark' ? '#8e8e93' : '#666666'} 
+                        />
+                        <Text style={styles.entryText}>Snoring: {data.snoringRange}%</Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               ))}
@@ -477,293 +893,4 @@ export default function TabOneScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  calmifyContainer: {
-    flex: 1,
-  },
-  inputContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  chartsContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  deleteButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#ff3b30',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingBottom: 20,
-    paddingTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    justifyContent: 'space-around',
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#007AFF',
-  },
-  tabText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-  activeNavText: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  inputCard: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#333',
-    fontWeight: '500',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  recentEntries: {
-    marginTop: 20,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 15,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  recentTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#ffffff',
-    textAlign: 'center',
-  },
-  entryCard: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  entryDate: {
-    fontSize: 14,
-    color: '#aaaaaa',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  entryDetails: {
-    gap: 6,
-  },
-  entryText: {
-    fontSize: 16,
-    color: '#ffffff',
-  },
-  chartCard: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  chartSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  stressSummary: {
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  stressTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-    textAlign: 'center',
-  },
-  stressItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    marginBottom: 8,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  stressDate: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  stressLevel: {
-    fontSize: 16,
-    color: '#ff3b30',
-    fontWeight: 'bold',
-    backgroundColor: '#fff1f0',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  stressedText: {
-    color: '#ff6b6b',
-    fontWeight: 'bold',
-  },
-  notStressedText: {
-    color: '#4cd964',
-    fontWeight: 'bold',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  pieChartContainer: {
-    backgroundColor: '#000',
-    borderRadius: 16,
-    padding: 15,
-    marginVertical: 10,
-    width: '100%',
-    height: 160,
-  },
-  pieChartContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-  },
-  pieChartSection: {
-    width: '40%',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  legendSection: {
-    width: '60%',
-    justifyContent: 'center',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  legendText: {
-    color: '#ffffff',
-    fontSize: 12,
-  },
-  sleepQualityText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 10,
-    color: '#333',
-  },
-  sleepRecommendation: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 5,
-    color: '#666',
-    fontStyle: 'italic',
-  },
-});
 

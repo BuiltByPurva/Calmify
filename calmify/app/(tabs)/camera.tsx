@@ -6,7 +6,6 @@ import {
 } from 'expo-camera';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '@/utils/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface MoodLog {
@@ -39,7 +38,7 @@ const STRESS_NOTES: Record<number, string> = {
 };
 
 export default function CameraScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraType, setCameraType] = useState<'front' | 'back'>('front');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -134,6 +133,7 @@ export default function CameraScreen() {
           notes
         };
 
+        console.log('Captured image URI:', photo.uri);
         setCurrentMood(newMood);
         saveMoodHistory(newMood);
         setShowResult(true);
@@ -177,7 +177,7 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {!showResult ? (
         <View style={styles.cameraContainer}>
           <CameraView
@@ -215,20 +215,37 @@ export default function CameraScreen() {
           </View>
         </View>
       ) : (
-        <View style={styles.resultContainer}>
-          <LinearGradient
-            colors={[theme.primary, theme.primary + '80']}
-            style={styles.resultGradient}
-          />
-          
-          <View style={styles.resultContent}>
+        <View style={[styles.resultContainer, { backgroundColor: theme.card }]}>
+          {/* Upper half - Image Preview */}
+          <View style={[styles.imagePreviewSection, { backgroundColor: theme.background }]}>
+            {currentMood?.imageUri ? (
+              <Image
+                source={{ uri: currentMood.imageUri }}
+                style={styles.previewImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={{ color: theme.text.primary }}>No image preview available</Text>
+            )}
+          </View>
+
+          {/* Lower half - Mood Detection Results */}
+          <View style={[styles.resultContent, { 
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+            borderTopWidth: 1,
+          }]}>
             {!showHistory ? (
               <>
-                <Text style={[styles.resultTitle, { color: theme.text.inverse }]}>
+                <Text style={[styles.resultTitle, { color: theme.text.primary }]}>
                   Mood Detected
                 </Text>
                 
-                <View style={[styles.emotionBox, { backgroundColor: theme.card }]}>
+                <View style={[styles.emotionBox, { 
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                  borderWidth: 1,
+                }]}>
                   <Text style={[styles.emotionText, { color: theme.text.primary }]}>
                     {currentMood?.emotion.toUpperCase()}
                   </Text>
@@ -238,7 +255,9 @@ export default function CameraScreen() {
                   
                   {currentMood?.stressLevel && (
                     <View style={[styles.stressIndicator, { backgroundColor: getStressLevelColor(currentMood.stressLevel) }]}>
-                      <Text style={styles.stressText}>Stress Level: {currentMood.stressLevel}/5</Text>
+                      <Text style={[styles.stressText, { color: theme.text.primary }]}>
+                        Stress Level: {currentMood.stressLevel}/5
+                      </Text>
                     </View>
                   )}
                   
@@ -271,14 +290,18 @@ export default function CameraScreen() {
               </>
             ) : (
               <>
-                <Text style={[styles.resultTitle, { color: theme.text.inverse }]}>
+                <Text style={[styles.resultTitle, { color: theme.text.primary }]}>
                   Mood History
                 </Text>
                 
                 <ScrollView style={styles.historyContainer}>
                   {moodHistory.length > 0 ? (
                     moodHistory.map((mood, index) => (
-                      <View key={index} style={[styles.historyItem, { backgroundColor: theme.card }]}>
+                      <View key={index} style={[styles.historyItem, { 
+                        backgroundColor: theme.card,
+                        borderColor: theme.border,
+                        borderWidth: 1,
+                      }]}>
                         <View style={styles.historyHeader}>
                           <Text style={[styles.historyEmotion, { color: theme.text.primary }]}>
                             {mood.emotion}
@@ -295,7 +318,9 @@ export default function CameraScreen() {
                           
                           {mood.stressLevel && (
                             <View style={[styles.historyStress, { backgroundColor: getStressLevelColor(mood.stressLevel) }]}>
-                              <Text style={styles.historyStressText}>Stress: {mood.stressLevel}/5</Text>
+                              <Text style={[styles.historyStressText, { color: '#ffffff' }]}>
+                                Stress: {mood.stressLevel}/5
+                              </Text>
                             </View>
                           )}
                         </View>
@@ -371,20 +396,33 @@ const styles = StyleSheet.create({
   },
   resultContainer: {
     flex: 1,
+    padding: 20,
+    borderRadius: 10,
+    margin: 10,
   },
-  resultGradient: {
+  imagePreviewSection: {
     flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
   resultContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    padding: 15,
+    paddingBottom: 100,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    marginTop: -25,
   },
   resultTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 15,
+    marginTop: 10,
   },
   emotionBox: {
     padding: 20,
@@ -410,8 +448,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stressText: {
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
   },
   notesText: {
     fontSize: 14,
@@ -422,6 +460,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
+    marginBottom: 0,
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
   actionButton: {
     paddingHorizontal: 30,
@@ -434,13 +477,14 @@ const styles = StyleSheet.create({
   },
   historyContainer: {
     width: '100%',
-    maxHeight: 400,
-    marginBottom: 20,
+    maxHeight: '75%',
+    marginBottom: 10,
   },
   historyItem: {
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    marginHorizontal: 2,
   },
   historyHeader: {
     flexDirection: 'row',
@@ -486,10 +530,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 25,
-    marginTop: 20,
+    marginTop: 5,
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
