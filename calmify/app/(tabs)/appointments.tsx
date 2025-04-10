@@ -34,6 +34,13 @@ interface TimeSlot {
   available: boolean;
 }
 
+interface BookedSession {
+  id: string;
+  therapist: Therapist;
+  date: string;
+  time: string;
+}
+
 const therapists: Therapist[] = [
   {
     id: '1',
@@ -83,7 +90,37 @@ export default function AppointmentsScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [scheduleStep, setScheduleStep] = useState<'date' | 'time' | 'confirm'>('date');
-  const [bookedSessions, setBookedSessions] = useState<any[]>([]);
+  const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+
+  // Load booked sessions from AsyncStorage on mount
+  useEffect(() => {
+    loadBookedSessions();
+  }, []);
+
+  const loadBookedSessions = async () => {
+    try {
+      const savedSessions = await AsyncStorage.getItem('bookedSessions');
+      if (savedSessions) {
+        const parsedSessions = JSON.parse(savedSessions);
+        // Convert date strings back to Date objects
+        const sessionsWithDates = parsedSessions.map((session: BookedSession) => ({
+          ...session,
+          date: new Date(session.date)
+        }));
+        setBookedSessions(sessionsWithDates);
+      }
+    } catch (error) {
+      console.error('Error loading booked sessions:', error);
+    }
+  };
+
+  const saveBookedSessions = async (sessions: BookedSession[]) => {
+    try {
+      await AsyncStorage.setItem('bookedSessions', JSON.stringify(sessions));
+    } catch (error) {
+      console.error('Error saving booked sessions:', error);
+    }
+  };
 
   const theme = {
     background: colorScheme === 'dark' ? '#1C1C1E' : '#F2F2F7',
@@ -109,22 +146,48 @@ export default function AppointmentsScreen() {
     setScheduleStep('date');
   };
 
-  const handleConfirmSchedule = () => {
+  const handleConfirmSchedule = async () => {
     if (!selectedTherapist || !selectedDate || !selectedTime) return;
 
     const newSession = {
       id: Date.now().toString(),
       therapist: selectedTherapist,
-      date: selectedDate,
+      date: selectedDate.toISOString(),
       time: selectedTime,
     };
 
-    setBookedSessions([...bookedSessions, newSession]);
+    const updatedSessions = [...bookedSessions, newSession];
+    setBookedSessions(updatedSessions);
+    await saveBookedSessions(updatedSessions);
+    
     setShowScheduleModal(false);
     setSelectedTab('upcoming');
     Alert.alert(
       'Appointment Scheduled',
       `Your appointment with ${selectedTherapist.name} has been scheduled for ${selectedDate.toLocaleDateString()} at ${selectedTime}.`
+    );
+  };
+
+  const cancelAppointment = async (sessionId: string) => {
+    Alert.alert(
+      'Cancel Appointment',
+      'Are you sure you want to cancel this appointment?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedSessions = bookedSessions.filter(session => session.id !== sessionId);
+            setBookedSessions(updatedSessions);
+            await saveBookedSessions(updatedSessions);
+            Alert.alert('Appointment Cancelled', 'Your appointment has been cancelled successfully.');
+          },
+        },
+      ]
     );
   };
 
@@ -334,50 +397,95 @@ export default function AppointmentsScreen() {
     </Modal>
   );
 
-  const renderUpcomingSession = (session: any) => (
+  const renderUpcomingSession = (session: BookedSession) => (
     <Animated.View
-      entering={FadeInDown.springify()}
       key={session.id}
+      entering={FadeInDown}
       style={[styles.sessionCard, { backgroundColor: theme.card }]}
     >
-      <Image
-        source={{ uri: session.therapist.image }}
-        style={styles.sessionTherapistImage}
+      <LinearGradient
+        colors={[
+          colorScheme === 'dark' ? 'rgba(74, 144, 226, 0.1)' : 'rgba(74, 144, 226, 0.05)',
+          'transparent'
+        ]}
+        style={styles.cardGradient}
       />
-      <View style={styles.sessionInfo}>
-        <Text style={[styles.sessionTherapistName, { color: theme.text.primary }]}>
-          {session.therapist.name}
-        </Text>
-        <Text style={[styles.sessionSpecialty, { color: theme.text.secondary }]}>
-          {session.therapist.specialty}
-        </Text>
-        <View style={styles.sessionDateTime}>
-          <Calendar size={16} color={theme.primary} style={styles.sessionIcon} />
-          <Text style={[styles.sessionDate, { color: theme.text.primary }]}>
-            {session.date.toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            })}
+      <View style={styles.sessionHeader}>
+        <Image
+          source={{ uri: session.therapist.image }}
+          style={styles.upcomingTherapistImage}
+        />
+        <View style={styles.sessionInfo}>
+          <Text style={[styles.upcomingTherapistName, { color: theme.text.primary }]}>
+            {session.therapist.name}
+          </Text>
+          <Text style={[styles.upcomingSpecialty, { color: theme.text.secondary }]}>
+            {session.therapist.specialty}
           </Text>
         </View>
-        <View style={styles.sessionDateTime}>
-          <Clock size={16} color={theme.primary} style={styles.sessionIcon} />
-          <Text style={[styles.sessionTime, { color: theme.text.primary }]}>
-            {session.time}
-          </Text>
+        <TouchableOpacity
+          style={[styles.cancelButton, { 
+            backgroundColor: colorScheme === 'dark' ? 'rgba(255, 69, 58, 0.1)' : 'rgba(255, 59, 48, 0.1)',
+            borderColor: 'transparent' 
+          }]}
+          onPress={() => cancelAppointment(session.id)}
+        >
+          <X size={20} color={colorScheme === 'dark' ? '#FF453A' : '#FF3B30'} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.sessionDivider} />
+
+      <View style={styles.sessionDetailsContainer}>
+        <View style={styles.detailColumn}>
+          <View style={styles.detailRow}>
+            <Calendar size={18} color={theme.primary} style={styles.detailIcon} />
+            <View>
+              <Text style={[styles.detailLabel, { color: theme.text.secondary }]}>
+                Date
+              </Text>
+              <Text style={[styles.detailValue, { color: theme.text.primary }]}>
+                {new Date(session.date).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.detailColumn}>
+          <View style={styles.detailRow}>
+            <Clock size={18} color={theme.primary} style={styles.detailIcon} />
+            <View>
+              <Text style={[styles.detailLabel, { color: theme.text.secondary }]}>
+                Time
+              </Text>
+              <Text style={[styles.detailValue, { color: theme.text.primary }]}>
+                {session.time}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
+
       <View style={styles.sessionActions}>
         <TouchableOpacity
           style={[styles.sessionActionButton, { backgroundColor: theme.primary }]}
         >
           <Video size={20} color={theme.text.inverse} />
+          <Text style={[styles.actionButtonText, { color: theme.text.inverse }]}>
+            Join Call
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.sessionActionButton, { backgroundColor: theme.primary }]}
+          style={[styles.sessionActionButton, { backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.primary }]}
         >
-          <Phone size={20} color={theme.text.inverse} />
+          <Phone size={20} color={theme.primary} />
+          <Text style={[styles.actionButtonText, { color: theme.primary }]}>
+            Contact
+          </Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -739,63 +847,99 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
   },
   sessionCard: {
-    flexDirection: 'row',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 3,
+        elevation: 4,
       },
     }),
   },
-  sessionTherapistImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  cardGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '100%',
+  },
+  sessionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  upcomingTherapistImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   sessionInfo: {
     flex: 1,
     marginLeft: 15,
   },
-  sessionTherapistName: {
-    fontSize: 16,
+  upcomingTherapistName: {
+    fontSize: 18,
     fontFamily: 'Inter-SemiBold',
     marginBottom: 4,
   },
-  sessionSpecialty: {
+  upcomingSpecialty: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    marginBottom: 8,
   },
-  sessionDateTime: {
+  sessionDivider: {
+    height: 1,
+    backgroundColor: 'rgba(150, 150, 150, 0.1)',
+    marginBottom: 15,
+  },
+  sessionDetailsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  detailColumn: {
+    flex: 1,
+  },
+  detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
   },
-  sessionIcon: {
-    marginRight: 8,
+  detailIcon: {
+    marginRight: 12,
   },
-  sessionDate: {
-    fontSize: 14,
+  detailLabel: {
+    fontSize: 12,
     fontFamily: 'Inter-Regular',
+    marginBottom: 2,
   },
-  sessionTime: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
+  detailValue: {
+    fontSize: 15,
+    fontFamily: 'Inter-Medium',
   },
   sessionActions: {
     flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
+    gap: 12,
   },
   sessionActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+  },
+  cancelButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
