@@ -23,7 +23,7 @@ import { SendHorizontal, Bot } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 const BOTTOM_TAB_HEIGHT = 49;
-const KEYBOARD_OFFSET = Platform.OS === 'ios' ? 110 : -BOTTOM_TAB_HEIGHT;
+const KEYBOARD_OFFSET = Platform.OS === 'ios' ? BOTTOM_TAB_HEIGHT : 0;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Message {
@@ -152,83 +152,83 @@ export default function ChatScreen() {
           ),
         }}
       />
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.select({ ios: 'padding', android: undefined })}
-        keyboardVerticalOffset={KEYBOARD_OFFSET}
-      >
-        <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
-          <ScrollView
-            ref={scrollViewRef}
-            style={styles.messagesContainer}
-            contentContainerStyle={[
-              styles.messagesContent,
-              { paddingBottom: Math.max(bottomOffset, 16) },
-            ]}
-            onContentSizeChange={() =>
-              scrollViewRef.current?.scrollToEnd({ animated: true })
-            }
-            showsVerticalScrollIndicator={false}
-          >
-            {messages.map((message, index) => (
-              <Animated.View
-                key={message.id}
-                entering={FadeInUp.delay(index * 100).springify()}
+      <View style={styles.contentContainer}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messagesContainer}
+          contentContainerStyle={[
+            styles.messagesContent,
+            { paddingBottom: Math.max(bottomOffset, 16) },
+          ]}
+          onContentSizeChange={() =>
+            scrollViewRef.current?.scrollToEnd({ animated: true })
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {messages.map((message, index) => (
+            <Animated.View
+              key={message.id}
+              entering={FadeInUp.delay(index * 100).springify()}
+              style={[
+                styles.messageBubble,
+                message.isBot
+                  ? [styles.botBubble, { 
+                      backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
+                      borderColor: colorScheme === 'dark' ? '#3C3C3E' : '#E5E5EA',
+                      borderWidth: 1,
+                    }]
+                  : [styles.userBubble, { 
+                      backgroundColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
+                      borderColor: 'transparent',
+                    }],
+              ]}
+            >
+              <Text
                 style={[
-                  styles.messageBubble,
-                  message.isBot
-                    ? [styles.botBubble, { 
-                        backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
-                        borderColor: colorScheme === 'dark' ? '#3C3C3E' : '#E5E5EA',
-                        borderWidth: 1,
-                      }]
-                    : [styles.userBubble, { 
-                        backgroundColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
-                        borderColor: 'transparent',
-                      }],
+                  styles.messageText,
+                  {
+                    color: message.isBot
+                      ? colorScheme === 'dark' ? '#FFFFFF' : '#000000'
+                      : '#FFFFFF',
+                  },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.messageText,
-                    {
-                      color: message.isBot
-                        ? colorScheme === 'dark' ? '#FFFFFF' : '#000000'
-                        : '#FFFFFF',
-                    },
-                  ]}
-                >
-                  {message.text}
-                </Text>
-                <Text
-                  style={[
-                    styles.timeText,
-                    {
-                      color: message.isBot
-                        ? colorScheme === 'dark' ? '#8E8E93' : '#8E8E93'
-                        : 'rgba(255, 255, 255, 0.8)',
-                    },
-                  ]}
-                >
-                  {formatTime(message.timestamp)}
-                </Text>
-              </Animated.View>
-            ))}
-            {isLoading && (
-              <Animated.View
-                entering={FadeInDown}
+                {message.text}
+              </Text>
+              <Text
                 style={[
-                  styles.loadingContainer,
-                  { backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#f0f0f0' },
+                  styles.timeText,
+                  {
+                    color: message.isBot
+                      ? colorScheme === 'dark' ? '#8E8E93' : '#8E8E93'
+                      : 'rgba(255, 255, 255, 0.8)',
+                  },
                 ]}
               >
-                <ActivityIndicator color={Colors[colorScheme ?? 'light'].tint} />
-              </Animated.View>
-            )}
-          </ScrollView>
+                {formatTime(message.timestamp)}
+              </Text>
+            </Animated.View>
+          ))}
+          {isLoading && (
+            <Animated.View
+              entering={FadeInDown}
+              style={[
+                styles.loadingContainer,
+                { backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#f0f0f0' },
+              ]}
+            >
+              <ActivityIndicator color={Colors[colorScheme ?? 'light'].tint} />
+            </Animated.View>
+          )}
+        </ScrollView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'position' : undefined}
+          keyboardVerticalOffset={KEYBOARD_OFFSET}
+          style={styles.keyboardAvoidView}
+        >
           <View style={[
-            styles.inputContainer, 
-            { 
+            styles.inputContainer,
+            {
               backgroundColor: Colors[colorScheme ?? 'light'].background,
               borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
             }
@@ -236,7 +236,7 @@ export default function ChatScreen() {
             <TextInput
               style={[
                 styles.input,
-                { 
+                {
                   backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.7)' : '#f0f0f0',
                   color: Colors[colorScheme ?? 'light'].text,
                   borderColor: 'transparent',
@@ -255,11 +255,11 @@ export default function ChatScreen() {
               ]}
               onPress={sendMessage}
             >
-              <SendHorizontal size={20} color={colorScheme === 'dark' ? '#FFFFFF' : '#FFFFFF'} />
+              <SendHorizontal size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </View>
     </View>
   );
 }
@@ -268,18 +268,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  safeArea: {
+  contentContainer: {
     flex: 1,
   },
-  keyboardAvoidingView: {
-    flex: 1,
+  keyboardAvoidView: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   messagesContainer: {
     flex: 1,
   },
   messagesContent: {
     padding: 16,
-    paddingBottom: 8,
+    paddingBottom: 80,
   },
   messageBubble: {
     maxWidth: '80%',
@@ -320,6 +324,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,

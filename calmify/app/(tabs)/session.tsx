@@ -449,9 +449,6 @@ export default function SessionsScreen() {
       style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].text }]}>
-          Sessions
-        </Text>
         <Text style={[styles.subtitle, { color: Colors[colorScheme ?? 'light'].tabIconDefault }]}>
           Your mindfulness journey
         </Text>

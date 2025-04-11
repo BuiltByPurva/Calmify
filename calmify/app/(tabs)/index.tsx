@@ -40,6 +40,17 @@ const getStressLabel = (level: number): string => {
   return STRESS_LABELS[level as keyof typeof STRESS_LABELS] || "Unknown";
 };
 
+const getStressLevelColor = (level: number) => {
+  switch (level) {
+    case 0: return '#4CD964';  // No Stress - Green
+    case 1: return '#5856D6';  // Low Stress - Purple
+    case 2: return '#FF9500';  // Moderate Stress - Orange
+    case 3: return '#FF3B30';  // High Stress - Red
+    case 4: return '#FF2D55';  // Extreme Stress - Pink
+    default: return '#8E8E93'; // Grey for unknown
+  }
+};
+
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const backgroundColor = useThemeColor({}, 'background');
@@ -236,50 +247,86 @@ export default function HomeScreen() {
 
     return (
       <ScrollView style={styles.chartsContainer}>
+        <View style={styles.dashboardHeader}>
+          <Text style={[styles.dashboardTitle, { color: textColor }]}>Health Analytics</Text>
+          <Text style={[styles.dashboardSubtitle, { color: colorScheme === 'dark' ? '#8E8E93' : '#666666' }]}>
+            Your health metrics overview
+          </Text>
+        </View>
+
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Sleep Quality Analysis</Text>
+          <View style={styles.chartHeader}>
+            <View style={styles.headerContent}>
+              <Text style={[styles.chartTitle, { color: textColor }]}>Sleep Quality Analysis</Text>
+              
+            </View>
+            <View style={[styles.qualityBadge, { 
+              backgroundColor: colorScheme === 'dark' ? 'rgba(74, 144, 226, 0.1)' : 'rgba(0, 122, 255, 0.1)',
+              borderColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
+              marginLeft: 12,
+            }]}>
+              <Text style={[styles.qualityText, { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }]}>
+                {sleepQuality}
+              </Text>
+            </View>
+          </View>
           <View style={styles.pieChartContainer}>
             <View style={styles.pieChartContent}>
               <View style={styles.pieChartSection}>
-                <PieChart
-                  data={sleepData}
-                  width={120}
-                  height={120}
-                  chartConfig={{
-                    ...chartConfig,
-                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  }}
-                  accessor="population"
-                  backgroundColor="transparent"
-                  paddingLeft="0"
-                  absolute
-                  hasLegend={false}
-                  center={[0, 0]}
-                />
+              <PieChart
+    data={sleepData}
+    width={160}
+    height={160}
+    chartConfig={{
+      ...chartConfig,
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    }}
+    accessor="population"
+    backgroundColor="transparent"
+    paddingLeft="15"
+    absolute
+    hasLegend={false}
+    center={[0, 0]}
+  />
               </View>
               <View style={styles.legendSection}>
                 {sleepData.map((item, index) => (
                   <View key={index} style={styles.legendItem}>
                     <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-                    <Text style={styles.legendText}>{item.name}</Text>
+                    <Text style={[styles.legendText, { color: colorScheme === 'dark' ? '#E0E0E0' : '#666666' }]}>
+                      {item.name}
+                    </Text>
                   </View>
                 ))}
               </View>
             </View>
           </View>
-          <Text style={styles.chartSubtitle}>Current Sleep Quality: {sleepQuality}</Text>
         </View>
 
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Heart Rate Trend</Text>
+          <View style={styles.chartHeader}>
+            <View style={styles.headerContent}>
+              <Text style={[styles.chartTitle, { color: textColor }]}>Heart Rate Trend</Text>
+             
+            </View>
+            <View style={[styles.statBadge, { 
+              backgroundColor: colorScheme === 'dark' ? 'rgba(255, 69, 58, 0.1)' : 'rgba(255, 59, 48, 0.1)',
+              borderColor: colorScheme === 'dark' ? '#FF453A' : '#FF3B30',
+              marginLeft: 12,
+            }]}>
+              <Text style={[styles.statText, { color: colorScheme === 'dark' ? '#FF453A' : '#FF3B30' }]}>
+                {savedData.length > 0 ? `${savedData[savedData.length - 1].heartRate} bpm` : 'N/A'}
+              </Text>
+            </View>
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <BarChart
               data={getChartData('heartRate')}
-              width={Math.max(screenWidth - 40, savedData.length * 90)}
+              width={Math.max(screenWidth - 32, savedData.length * 100)}
               height={220}
               chartConfig={{
                 ...chartConfig,
-                color: (opacity = 1) => `rgba(255, 82, 82, ${opacity})`,
+                color: (opacity = 1) => colorScheme === 'dark' ? `rgba(255, 69, 58, ${opacity})` : `rgba(255, 59, 48, ${opacity})`,
               }}
               style={styles.chart}
               yAxisLabel=""
@@ -290,11 +337,26 @@ export default function HomeScreen() {
               segments={4}
             />
           </ScrollView>
-          <Text style={styles.chartSubtitle}>Normal Range: 60-100 bpm</Text>
         </View>
 
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Stress Level Trend</Text>
+          <View style={styles.chartHeader}>
+            <View style={styles.headerContent}>
+              <Text style={[styles.chartTitle, { color: textColor }]}>Stress Level Trend</Text>
+              
+            </View>
+            {savedData.length > 0 && savedData[savedData.length - 1].prediction !== undefined && (
+              <View style={[styles.stressLevelBadge, { 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(74, 144, 226, 0.1)' : 'rgba(0, 122, 255, 0.1)',
+                borderColor: colorScheme === 'dark' ? '#4A90E2' : '#007AFF',
+                marginLeft: 12,
+              }]}>
+                <Text style={[styles.stressLevelText, { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }]}>
+                  Level {savedData[savedData.length - 1].prediction?.toFixed(1)}
+                </Text>
+              </View>
+            )}
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <LineChart
               data={{
@@ -303,11 +365,11 @@ export default function HomeScreen() {
                   data: savedData.slice(-7).map(d => d.prediction || 0)
                 }]
               }}
-              width={Math.max(screenWidth - 40, savedData.length * 100)}
+              width={Math.max(screenWidth - 32, savedData.length * 100)}
               height={220}
               chartConfig={{
                 ...chartConfig,
-                color: (opacity = 1) => `rgba(255, 59, 48, ${opacity})`,
+                color: (opacity = 1) => colorScheme === 'dark' ? `rgba(74, 144, 226, ${opacity})` : `rgba(0, 122, 255, ${opacity})`,
               }}
               style={styles.chart}
               bezier
@@ -322,19 +384,40 @@ export default function HomeScreen() {
               fromZero
             />
           </ScrollView>
-          <Text style={styles.chartSubtitle}>Stress Level (0-4)</Text>
         </View>
 
         <View style={styles.stressSummary}>
-          <Text style={styles.stressTitle}>Stress Level Summary</Text>
+          <View style={styles.summaryHeader}>
+            <Text style={[styles.summaryTitle, { color: textColor }]}>Recent Stress Analysis</Text>
+            <Text style={[styles.summarySubtitle, { color: colorScheme === 'dark' ? '#8E8E93' : '#666666' }]}>
+              Last 5 measurements
+            </Text>
+          </View>
           {savedData.slice(-5).reverse().map((data, index) => (
-            <View key={index} style={styles.stressItem}>
-              <Text style={styles.stressDate}>
-                {new Date(data.timestamp).toLocaleDateString()}
-              </Text>
-              <Text style={styles.stressLevel}>
-                {data.stressLabel || `Level: ${data.prediction?.toFixed(1) || 'N/A'}`}
-              </Text>
+            <View key={index} style={[
+              styles.stressItem,
+              { 
+                backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
+                borderLeftColor: getStressLevelColor(data.stressLevel || 0)
+              }
+            ]}>
+              <View style={styles.stressItemContent}>
+                <View>
+                  <Text style={[styles.stressDate, { color: colorScheme === 'dark' ? '#FFFFFF' : '#000000' }]}>
+                    {new Date(data.timestamp).toLocaleDateString()}
+                  </Text>
+                  <Text style={[styles.stressTime, { color: colorScheme === 'dark' ? '#8E8E93' : '#666666' }]}>
+                    {new Date(data.timestamp).toLocaleTimeString()}
+                  </Text>
+                </View>
+                <View style={[styles.stressLevelIndicator, {
+                  backgroundColor: colorScheme === 'dark' ? 'rgba(74, 144, 226, 0.1)' : 'rgba(0, 122, 255, 0.1)',
+                }]}>
+                  <Text style={[styles.stressLevelValue, { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }]}>
+                    {data.stressLabel || `Level ${data.prediction?.toFixed(1)}`}
+                  </Text>
+                </View>
+              </View>
             </View>
           ))}
         </View>
@@ -384,7 +467,7 @@ export default function HomeScreen() {
     },
     chartsContainer: {
       flex: 1,
-      padding: 10,
+      padding: 0,
       backgroundColor: backgroundColor,
     },
     deleteButton: {
@@ -553,82 +636,198 @@ export default function HomeScreen() {
       fontWeight: 'bold',
     },
     chartCard: {
-      backgroundColor: cardBackground,
-      borderRadius: 15,
-      padding: 10,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 20,
+      padding: 16,
+      marginHorizontal: 8,
       marginBottom: 20,
-      marginHorizontal: 5,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      width: '98%',
+      shadowRadius: 8,
+      elevation: 5,
+      width: screenWidth - 16,
       alignSelf: 'center',
     },
+    chartHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 24,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      backgroundColor: 'transparent',
+    },
+    headerContent: {
+      flex: 1,
+      paddingRight: 8,
+      backgroundColor: 'transparent',
+    },
     chartTitle: {
-      fontSize: 18,
+      fontSize: 20,
       fontWeight: 'bold',
-      marginBottom: 10,
-      color: textColor,
+      marginBottom: 8,
+      color: colorScheme === 'dark' ? '#FFFFFF' : '#000000',
+      backgroundColor: 'transparent',
+    },
+    chartDescription: {
+      fontSize: 14,
+      opacity: 0.7,
+    },
+    qualityBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+      minWidth: 80,
+      alignItems: 'center',
+    },
+    qualityText: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    statBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+      minWidth: 80,
+      alignItems: 'center',
+    },
+    statText: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    stressLevelBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+      minWidth: 80,
+      alignItems: 'center',
+    },
+    stressLevelText: {
+      fontSize: 12,
+      fontWeight: '600',
     },
     chart: {
       marginVertical: 8,
       borderRadius: 16,
-      marginHorizontal: -10,
-    },
-    chartSubtitle: {
-      fontSize: 12,
-      color: entryDateText,
-      textAlign: 'center',
-      marginTop: 5,
     },
     stressSummary: {
-      backgroundColor: cardBackground,
-      borderRadius: 15,
-      padding: 15,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 20,
+      padding: 16,
+      marginHorizontal: 8,
       marginBottom: 20,
-      marginHorizontal: 5,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      width: '98%',
+      shadowRadius: 8,
+      elevation: 5,
+      width: screenWidth - 16,
       alignSelf: 'center',
     },
-    stressTitle: {
+    summaryHeader: {
+      marginBottom: 16,
+      backgroundColor: 'transparent',
+    },
+    summaryTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      marginBottom: 20,
-      color: textColor,
-      textAlign: 'center',
+      marginBottom: 4,
+      color: colorScheme === 'dark' ? '#FFFFFF' : '#000000',
+      backgroundColor: 'transparent',
+    },
+    summarySubtitle: {
+      fontSize: 14,
+      opacity: 0.7,
     },
     stressItem: {
+      borderLeftWidth: 4,
+      borderRadius: 12,
+      marginBottom: 12,
+      overflow: 'hidden',
+    },
+    stressItemContent: {
+      padding: 16,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 15,
-      marginBottom: 8,
-      backgroundColor: stressLevelBackground,
-      borderRadius: 10,
-      borderLeftWidth: 4,
-      borderLeftColor: stressLevelBorder,
     },
     stressDate: {
       fontSize: 14,
-      color: entryDateText,
-      fontWeight: '500',
+      fontWeight: '600',
+      marginBottom: 4,
     },
-    stressLevel: {
-      fontSize: 16,
-      color: textColor,
-      fontWeight: 'bold',
-      backgroundColor: pieChartBackground,
+    stressTime: {
+      fontSize: 12,
+    },
+    stressLevelIndicator: {
       paddingHorizontal: 12,
-      paddingVertical: 4,
-      borderRadius: 8,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    stressLevelValue: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    pieChartContainer: {
+      borderRadius: 16,
+      padding: 0,
+      marginTop: 0,
+      marginBottom: 10,
+      backgroundColor: 'transparent',
+      width: '100%',
+    },
+    pieChartContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      width: '100%',
+      paddingHorizontal: 8,
+    },
+    pieChartSection: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'transparent',
+      minHeight: 160,
+      width: '50%',
+    },
+    legendSection: {
+      flex: 1,
+      backgroundColor: 'transparent',
+      paddingLeft: 16,
+      width: '50%',
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    legendColor: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 8,
+    },
+    legendText: {
+      fontSize: 12,
+    },
+    dashboardHeader: {
+      padding: 20,
+      paddingBottom: 10,
+    },
+    dashboardTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 4,
+    },
+    dashboardSubtitle: {
+      fontSize: 14,
+      opacity: 0.7,
     },
     emptyState: {
       flex: 1,
@@ -640,59 +839,6 @@ export default function HomeScreen() {
       fontSize: 16,
       color: emptyStateText,
       textAlign: 'center',
-    },
-    pieChartContainer: {
-      backgroundColor: pieChartBackground,
-      borderRadius: 16,
-      padding: 15,
-      marginVertical: 10,
-      width: '100%',
-      height: 160,
-    },
-    pieChartContent: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      width: '100%',
-      height: '100%',
-    },
-    pieChartSection: {
-      width: '40%',
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    legendSection: {
-      width: '60%',
-      justifyContent: 'center',
-    },
-    legendItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
-    },
-    legendColor: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      marginRight: 8,
-    },
-    legendText: {
-      color: legendText,
-      fontSize: 12,
-    },
-    sleepQualityText: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      marginTop: 10,
-      color: textColor,
-    },
-    sleepRecommendation: {
-      fontSize: 14,
-      textAlign: 'center',
-      marginTop: 5,
-      color: entryDateText,
-      fontStyle: 'italic',
     },
   });
 

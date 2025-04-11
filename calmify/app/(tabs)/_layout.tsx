@@ -19,6 +19,13 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  const getHeaderTitle = (title: string) => (
+    <Text style={[
+      styles.headerTitle,
+      { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }
+    ]}>{title}</Text>
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -38,12 +45,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '',
-          headerTitle: () => (
-            <Text style={[
-              styles.headerTitle,
-              { color: colorScheme === 'dark' ? '#4A90E2' : '#007AFF' }
-            ]}>Calmify</Text>
-          ),
+          headerTitle: () => getHeaderTitle('Calmify'),
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -69,6 +71,7 @@ export default function TabLayout() {
         name="camera"
         options={{
           title: 'Emotion',
+          headerTitle: () => getHeaderTitle('Emotion'),
           tabBarIcon: ({ color }) => <TabBarIcon name="camera" color={color} />,
           headerStyle: {
             backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
@@ -80,6 +83,7 @@ export default function TabLayout() {
         name="chat"
         options={{
           title: 'Chat',
+          headerTitle: () => getHeaderTitle('Chat'),
           tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
           headerStyle: {
             backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
@@ -91,6 +95,7 @@ export default function TabLayout() {
         name="session"
         options={{
           title: 'Session',
+          headerTitle: () => getHeaderTitle('Session'),
           tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
           headerStyle: {
             backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
@@ -102,6 +107,7 @@ export default function TabLayout() {
         name="appointments"
         options={{
           title: 'Appointments',
+          headerTitle: () => getHeaderTitle('Appointments'),
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
           headerStyle: {
             backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
@@ -116,9 +122,10 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     letterSpacing: 1,
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
   },
 });

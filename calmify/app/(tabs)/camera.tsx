@@ -177,7 +177,7 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' }]}>
       {!showResult ? (
         <View style={styles.cameraContainer}>
           <CameraView
@@ -185,172 +185,138 @@ export default function CameraScreen() {
             style={styles.camera}
             facing={cameraType}
           />
-          <View style={styles.overlay}>
-            <View style={styles.header}>
-              <Text style={[styles.title, { color: theme.text.inverse }]}>
+          <View style={[styles.overlay, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.header, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)' }]}>
+              <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                 Mood Detection
               </Text>
             </View>
             
             <View style={styles.controls}>
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: theme.primary }]}
+                style={[styles.button, { backgroundColor: isDark ? '#4A90E2' : '#007AFF' }]}
                 onPress={captureAndAnalyze}
                 disabled={isAnalyzing}
               >
                 {isAnalyzing ? (
-                  <ActivityIndicator color={theme.text.inverse} />
+                  <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <FontAwesome name="camera" size={24} color={theme.text.inverse} />
+                  <FontAwesome name="camera" size={24} color="#FFFFFF" />
                 )}
               </TouchableOpacity>
-              
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: theme.card }]}
+                style={[styles.button, { backgroundColor: isDark ? '#4A90E2' : '#007AFF', marginLeft: 16 }]}
                 onPress={toggleCameraType}
               >
-                <FontAwesome name="refresh" size={24} color={theme.text.primary} />
+                <FontAwesome name="refresh" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: isDark ? '#4A90E2' : '#007AFF', marginLeft: 16 }]}
+                onPress={toggleHistory}
+              >
+                <FontAwesome name="history" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
       ) : (
-        <View style={[styles.resultContainer, { backgroundColor: theme.card }]}>
-          {/* Upper half - Image Preview */}
-          <View style={[styles.imagePreviewSection, { backgroundColor: theme.background }]}>
-            {currentMood?.imageUri ? (
+        <ScrollView style={[styles.resultContainer, { backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF' }]}>
+          <View style={[styles.resultHeader, { backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7' }]}>
+            <Text style={[styles.resultTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+              Analysis Result
+            </Text>
+          </View>
+          
+          {currentMood && (
+            <View style={[styles.resultContent, { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}>
               <Image
                 source={{ uri: currentMood.imageUri }}
-                style={styles.previewImage}
-                resizeMode="cover"
+                style={styles.resultImage}
               />
-            ) : (
-              <Text style={{ color: theme.text.primary }}>No image preview available</Text>
-            )}
-          </View>
+              <View style={[styles.resultInfo, { backgroundColor: isDark ? '#3C3C3E' : '#F2F2F7' }]}>
+                <Text style={[styles.emotionText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                  Emotion: {currentMood.emotion}
+                </Text>
+                <Text style={[styles.confidenceText, { color: isDark ? '#E0E0E0' : '#666666' }]}>
+                  Confidence: {(currentMood.confidence * 100).toFixed(1)}%
+                </Text>
+                <View style={[styles.stressIndicator, { backgroundColor: isDark ? '#2C2C2E' : '#FFFFFF' }]}>
+                  <Text style={[styles.stressText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                    Stress Level: {currentMood.stressLevel}/5
+                  </Text>
+                  <View style={[styles.stressBar, { backgroundColor: getStressLevelColor(currentMood.stressLevel || 0) }]} />
+                </View>
+                <Text style={[styles.notesText, { color: isDark ? '#E0E0E0' : '#666666' }]}>
+                  {currentMood.notes}
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          <TouchableOpacity
+            style={[styles.actionButton, {
+              backgroundColor: isDark ? '#4A90E2' : '#007AFF',
+              marginTop: 16,
+              marginHorizontal: 16,
+              marginBottom: 20,
+            }]}
+            onPress={resetCamera}
+          >
+            <Text style={styles.actionButtonText}>Take Another Photo</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
 
-          {/* Lower half - Mood Detection Results */}
-          <View style={[styles.resultContent, { 
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-            borderTopWidth: 1,
-          }]}>
-            {!showHistory ? (
-              <>
-                <Text style={[styles.resultTitle, { color: theme.text.primary }]}>
-                  Mood Detected
-                </Text>
-                
-                <View style={[styles.emotionBox, { 
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
-                  borderWidth: 1,
-                }]}>
-                  <Text style={[styles.emotionText, { color: theme.text.primary }]}>
-                    {currentMood?.emotion.toUpperCase()}
-                  </Text>
-                  <Text style={[styles.confidenceText, { color: theme.text.secondary }]}>
-                    Confidence: {currentMood?.confidence.toFixed(2)}%
-                  </Text>
-                  
-                  {currentMood?.stressLevel && (
-                    <View style={[styles.stressIndicator, { backgroundColor: getStressLevelColor(currentMood.stressLevel) }]}>
-                      <Text style={[styles.stressText, { color: theme.text.primary }]}>
-                        Stress Level: {currentMood.stressLevel}/5
-                      </Text>
-                    </View>
-                  )}
-                  
-                  {currentMood?.notes && (
-                    <Text style={[styles.notesText, { color: theme.text.secondary }]}>
-                      {currentMood.notes}
-                    </Text>
-                  )}
-                </View>
-                
-                <View style={styles.resultActions}>
-                  <TouchableOpacity
-                    style={[styles.actionButton, { backgroundColor: theme.primary }]}
-                    onPress={resetCamera}
-                  >
-                    <Text style={[styles.actionButtonText, { color: theme.text.inverse }]}>
-                      Take Another
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    style={[styles.actionButton, { backgroundColor: theme.card }]}
-                    onPress={toggleHistory}
-                  >
-                    <Text style={[styles.actionButtonText, { color: theme.text.primary }]}>
-                      View History
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={[styles.resultTitle, { color: theme.text.primary }]}>
-                  Mood History
-                </Text>
-                
-                <ScrollView style={styles.historyContainer}>
-                  {moodHistory.length > 0 ? (
-                    moodHistory.map((mood, index) => (
-                      <View key={index} style={[styles.historyItem, { 
-                        backgroundColor: theme.card,
-                        borderColor: theme.border,
-                        borderWidth: 1,
-                      }]}>
-                        <View style={styles.historyHeader}>
-                          <Text style={[styles.historyEmotion, { color: theme.text.primary }]}>
-                            {mood.emotion}
-                          </Text>
-                          <Text style={[styles.historyDate, { color: theme.text.secondary }]}>
-                            {new Date(mood.timestamp).toLocaleString()}
-                          </Text>
-                        </View>
-                        
-                        <View style={styles.historyDetails}>
-                          <Text style={[styles.historyConfidence, { color: theme.text.secondary }]}>
-                            Confidence: {mood.confidence.toFixed(2)}%
-                          </Text>
-                          
-                          {mood.stressLevel && (
-                            <View style={[styles.historyStress, { backgroundColor: getStressLevelColor(mood.stressLevel) }]}>
-                              <Text style={[styles.historyStressText, { color: '#ffffff' }]}>
-                                Stress: {mood.stressLevel}/5
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                        
-                        {mood.notes && (
-                          <Text style={[styles.historyNotes, { color: theme.text.secondary }]}>
-                            {mood.notes}
-                          </Text>
-                        )}
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={[styles.noHistoryText, { color: theme.text.secondary }]}>
-                      No mood history available
-                    </Text>
-                  )}
-                </ScrollView>
-                
-                <TouchableOpacity
-                  style={[styles.backButton, { backgroundColor: theme.primary }]}
-                  onPress={() => setShowHistory(false)}
-                >
-                  <Text style={[styles.backButtonText, { color: theme.text.inverse }]}>
-                    Back to Result
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
+      {showHistory && (
+        <ScrollView 
+          style={[styles.historyContainer, { 
+            backgroundColor: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
+            borderColor: isDark ? '#3C3C3E' : '#E5E5EA'
+          }]}
+        >
+          <View style={[styles.historyHeader, { borderBottomColor: isDark ? '#3C3C3E' : '#E5E5EA' }]}>
+            <Text style={[styles.historyTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+              Mood History
+            </Text>
+            <TouchableOpacity onPress={toggleHistory}>
+              <FontAwesome name="close" size={24} color={isDark ? '#FFFFFF' : '#000000'} />
+            </TouchableOpacity>
           </View>
-        </View>
+          
+          {moodHistory.map((mood, index) => (
+            <View 
+              key={index} 
+              style={[
+                styles.historyItem, 
+                { 
+                  backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
+                  borderColor: isDark ? '#3C3C3E' : '#E5E5EA'
+                }
+              ]}
+            >
+              <Image source={{ uri: mood.imageUri }} style={styles.historyImage} />
+              <View style={styles.historyInfo}>
+                <Text style={[styles.historyEmotion, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+                  {mood.emotion}
+                </Text>
+                <Text style={[styles.historyTime, { color: isDark ? '#E0E0E0' : '#666666' }]}>
+                  {new Date(mood.timestamp).toLocaleString()}
+                </Text>
+                <View style={styles.historyStressLevel}>
+                  <Text style={[styles.historyStressText, { color: isDark ? '#E0E0E0' : '#666666' }]}>
+                    Stress Level: {mood.stressLevel}/5
+                  </Text>
+                  <View 
+                    style={[
+                      styles.historyStressBar,
+                      { backgroundColor: getStressLevelColor(mood.stressLevel || 0) }
+                    ]} 
+                  />
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
       )}
     </View>
   );
@@ -367,178 +333,160 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlay: {
-    flex: 1,
-    backgroundColor: 'transparent',
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
-    padding: 20,
   },
   header: {
-    alignItems: 'center',
-    paddingTop: 20,
+    padding: 16,
+    paddingTop: 48,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   controls: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 30,
+    padding: 20,
+    paddingBottom: 40,
   },
   button: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   resultContainer: {
     flex: 1,
-    padding: 20,
-    borderRadius: 10,
-    margin: 10,
   },
-  imagePreviewSection: {
-    flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  resultContent: {
-    flex: 1,
-    padding: 15,
-    paddingBottom: 100,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    marginTop: -25,
+  resultHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
   },
   resultTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
-    marginTop: 10,
+    textAlign: 'center',
   },
-  emotionBox: {
-    padding: 20,
-    borderRadius: 15,
-    alignItems: 'center',
-    marginBottom: 30,
+  resultContent: {
+    padding: 16,
+  },
+  resultImage: {
     width: '100%',
+    height: 300,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  resultInfo: {
+    padding: 16,
+    borderRadius: 12,
   },
   emotionText: {
-    fontSize: 32,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   confidenceText: {
     fontSize: 16,
-    marginBottom: 15,
+    marginBottom: 16,
   },
   stressIndicator: {
-    padding: 10,
+    padding: 12,
     borderRadius: 8,
-    marginVertical: 10,
-    width: '100%',
-    alignItems: 'center',
+    marginBottom: 16,
   },
   stressText: {
     fontSize: 16,
-    fontWeight: '600',
+    marginBottom: 8,
+  },
+  stressBar: {
+    height: 8,
+    borderRadius: 4,
   },
   notesText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  resultActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginBottom: 0,
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  actionButton: {
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-  },
-  actionButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontStyle: 'italic',
   },
   historyContainer: {
-    width: '100%',
-    maxHeight: '75%',
-    marginBottom: 10,
-  },
-  historyItem: {
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    marginHorizontal: 2,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 1,
   },
   historyHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 5,
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  historyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  historyItem: {
+    flexDirection: 'row',
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  historyImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+  },
+  historyInfo: {
+    flex: 1,
+    marginLeft: 12,
   },
   historyEmotion: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  historyDate: {
-    fontSize: 12,
-  },
-  historyDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  historyConfidence: {
+  historyTime: {
     fontSize: 14,
+    marginBottom: 8,
   },
-  historyStress: {
-    padding: 5,
-    borderRadius: 5,
+  historyStressLevel: {
+    backgroundColor: 'transparent',
   },
   historyStressText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 4,
   },
-  historyNotes: {
-    fontSize: 12,
-    fontStyle: 'italic',
+  historyStressBar: {
+    height: 4,
+    borderRadius: 2,
+    width: '100%',
   },
-  noHistoryText: {
-    textAlign: 'center',
-    fontSize: 16,
-    marginTop: 20,
-  },
-  backButton: {
-    paddingHorizontal: 30,
-    paddingVertical: 15,
+  actionButton: {
+    height: 50,
     borderRadius: 25,
-    marginTop: 5,
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  backButtonText: {
+  actionButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
