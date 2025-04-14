@@ -1,15 +1,7 @@
 # Calmify -  Mental Health & Wellness App 🌟
 
-## App Screenshots
-
-<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-  <img src="calmify/assets/screenshots/UI.jpg" alt="Calmify UI" width="200"/>
-  <img src="calmify/assets/screenshots/Analytics.jpg" alt="Analytics View" width="200"/>
-  <img src="calmify/assets/screenshots/Chatbot.jpg" alt="Chat Interface" width="200"/>
-  <img src="calmify/assets/screenshots/Sessions.png" alt="Meditation Sessions" width="200"/>
-</div>
-
 ## 🎯 Overview
+
 Calmify is a comprehensive mental health and wellness application that combines advanced machine learning algorithms with user-friendly features to provide personalized mental health support. The app uses AdaBoost for stress detection and CNN for facial expression recognition, making it a powerful tool for monitoring and managing mental well-being.
 
 ## 🌿 What's Calmify All About?
@@ -145,6 +137,16 @@ npx expo start
 3. **Meditation Sessions**: Start guided meditation sessions with timer and background music
 4. **Chat Support**: Interact with the AI chatbot for mental health support
 5. **Book Appointment**: Access to book appointment of professional therapist at your fingertips
+
+
+## App Screenshots
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+  <img src="calmify/assets/screenshots/Home.png" alt="Calmify UI" width="200"/>
+  <img src="calmify/assets/screenshots/Analytics1.png" alt="Analytics View" width="200"/>
+  <img src="calmify/assets/screenshots/Analytics2.png" alt="Chat Interface" width="200"/>
+  <img src="calmify/assets/screenshots/Sessions.png" alt="Meditation Sessions" width="200"/>
+</div>
 
 ## Contributing
 
