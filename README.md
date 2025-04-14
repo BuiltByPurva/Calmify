@@ -41,7 +41,7 @@ Mental health matters — and Calmify is our take on using AI + accessible tech 
   <img src="calmify/assets/screenshots/Home.jpg" alt="Calmify UI" width="200"/>
   <img src="calmify/assets/screenshots/Analytics1.png" alt="Analytics View" width="200"/>
   <img src="calmify/assets/screenshots/Analytics2.png" alt="Analytics View" width="200"/>
-  <img src="calmify/assets/screenshots/Chat Screen.jpg alt="Chat Interface" width="200"/>
+  <img src="calmify/assets/screenshots/Chat Screen.jpg" alt="Chat Interface" width="200"/>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
@@ -50,6 +50,7 @@ Mental health matters — and Calmify is our take on using AI + accessible tech 
   <img src="calmify/assets/screenshots/Sessions.png" alt="Meditation Sessions" width="200"/>
   <img src="calmify/assets/screenshots/Appointments.jpg" alt="Chat Interface" width="200"/>
 </div>
+
 
 ## 📁 Project Structure
 
