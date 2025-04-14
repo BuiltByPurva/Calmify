@@ -43,7 +43,7 @@ Mental health matters — and Calmify is our take on using AI + accessible tech 
   <img src="calmify/assets/screenshots/Analytics2.png" alt="Analytics View" width="200"/>
   <img src="calmify/assets/screenshots/Chat Screen.jpg" alt="Chat Interface" width="200"/>
 </div>
-<div></div>
+<div style="margin:20px"></div>
 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
   <img src="calmify/assets/screenshots/Camera.png" alt="Camera" width="200"/>
   <img src="calmify/assets/screenshots/Mood Detection.jpg" alt="Emotion Detection" width="200"/>
