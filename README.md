@@ -1,4 +1,4 @@
-# Calmify - Mental Health App
+# Calmify -  Mental Health & Wellness App 🌟
 
 ## App Screenshots
 
@@ -9,7 +9,12 @@
   <img src="calmify/assets/screenshots/Sessions.png" alt="Meditation Sessions" width="200"/>
 </div>
 
-Calmify is a comprehensive mental health and sleep tracking application that helps users monitor their stress levels, sleep patterns, and provides guided meditation sessions.
+## 🎯 Overview
+Calmify is a comprehensive mental health and wellness application that combines advanced machine learning algorithms with user-friendly features to provide personalized mental health support. The app uses AdaBoost for stress detection and CNN for facial expression recognition, making it a powerful tool for monitoring and managing mental well-being.
+
+## 🌿 What's Calmify All About?
+Mental health matters — and Calmify is our take on using AI + accessible tech to support it.
+💡 Currently available as a cross-platform mobile app, Calmify helps users monitor stress levels based on manually entered data — with smart predictions powered by machine learning.
 
 ## Features
 
@@ -17,6 +22,8 @@ Calmify is a comprehensive mental health and sleep tracking application that hel
 - **Sleep Analytics**: Monitor sleep duration, snoring rate, and heart rate
 - **Guided Meditation**: Access to various meditation sessions with timer and background music
 - **Chat Support**: AI-powered chat interface for mental health support
+- **Sessions**: Schedule sessions and track your mental wellness journey
+- **Appointments**: Booking Progfessional Therapist
 - **Dark Mode**: Comfortable dark theme for all app screens
 
 ## Tech Stack
@@ -35,26 +42,52 @@ Calmify is a comprehensive mental health and sleep tracking application that hel
 - Hugging Face Transformers for chatbot
 - RESTful API architecture
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 calmify/
-├── app/                  # Main application code
-│   ├── (tabs)/           # Tab screens
-│   │   ├── index.tsx     # Home/Input screen
-│   │   ├── chat.tsx      # Chat interface
-│   │   └── session.tsx   # Meditation sessions
-│   └── utils/            # Utility functions
-├── assets/               # Static assets
-│   ├── fonts/            # Custom fonts
-│   └── sounds/           # Meditation sounds
-└── components/           # Reusable components
-
-backend/
-├── app.py                # Flask application
-├── models/               # ML models
-└── requirements.txt      # Python dependencies
+├── app/                           # Main application code
+│   ├── (tabs)/                   # Tab-based navigation
+│   │   ├── index.tsx            # Home screen
+│   │   ├── analytics.tsx        # Analytics dashboard
+│   │   ├── session.tsx         # Meditation sessions
+│   │   └── appointments.tsx    # Appointment management
+│   ├── components/             # Shared components
+│   ├── services/               # API services
+│   ├── _layout.tsx            # Root layout configuration
+│   ├── modal.tsx              # Modal screens
+│   ├── +html.tsx             # HTML configuration
+│   └── +not-found.tsx        # 404 page
+│
+├── components/                    # Reusable components
+│   ├── StressMonitor/           # Stress detection UI
+│   ├── Charts/                  # Analytics visualizations
+│   └── common/                  # Shared UI elements
+│
+├── context/                      # React Context providers
+│   └── AppContext.tsx          # Global state management
+│
+├── utils/                        # Utility functions
+│   ├── api.ts                  # API helpers
+│   └── helpers.ts              # Common helpers
+│
+├── constants/                    # App constants
+│   ├── theme.ts               # Theme configuration
+│   └── config.ts             # App configuration
+│
+├── assets/                       # Static assets
+│   ├── images/                # App images
+│   ├── icons/                 # App icons
+│   └── sounds/                # Audio files
+│
+├── .expo/                        # Expo configuration
+├── node_modules/                 # Dependencies
+├── app.json                      # Expo app configuration
+├── package.json                  # Project dependencies
+├── tsconfig.json                # TypeScript configuration
+└── .gitignore                   # Git ignore rules
 ```
+
 
 ## Getting Started
 
@@ -68,7 +101,7 @@ backend/
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/calmify.git
+git clone https://github.com/BuiltByPurva/Calmify.git
 cd calmify
 ```
 
@@ -111,6 +144,7 @@ npx expo start
 2. **View Analytics**: Check your stress prediction and health trends
 3. **Meditation Sessions**: Start guided meditation sessions with timer and background music
 4. **Chat Support**: Interact with the AI chatbot for mental health support
+5. **Book Appointment**: Access to book appointment of professional therapist at your fingertips
 
 ## Contributing
 
