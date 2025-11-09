@@ -139,7 +139,7 @@ FLASK_ENV=development
 5. Start the backend server
 ```bash
 cd backend
-flask run
+flask run or python app.py
 ```
 
 6. Start the frontend application
